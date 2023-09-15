@@ -3,7 +3,7 @@ const z = require('zod');
 const { validate, wrap } = require('../utils');
 const DB = require('../db');
 
-const LocaleAccountRequest = z.object({
+const LocateAccountRequest = z.object({
     body: z.object({
         email: z.string().email(),
     }),
@@ -13,7 +13,7 @@ const router = express.Router();
 
 // TODO: router.use(XSRF Header)
 
-router.post('/locateAccount', validate(LocaleAccountRequest), wrap(async (req, res) => {
+router.post('/locateAccount', validate(LocateAccountRequest), wrap(async (req, res) => {
     /**
      * @type {DB}
      */
