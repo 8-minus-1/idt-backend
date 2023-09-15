@@ -25,3 +25,6 @@ yarn-error.log*
 next-env.d.ts
 
 config.json
+
+/data/*
+!.gitkeep
