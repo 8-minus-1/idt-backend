@@ -1,4 +1,10 @@
+const wrap = (fn) => (...args) => fn(...args).catch(args[2]);
+
 module.exports = {
+    /**
+     * 傳入 async function，回傳會將拋出的例外往 next 丟的 middleware function。
+     */
+    wrap,
 
     /**
      * 傳入一 ZodSchema 物件，產生驗證請求用的 middleware function。
@@ -18,7 +24,7 @@ module.exports = {
      * 在 query (網址問號後面那串)、params (router path 中以冒號開頭的參數)
      * 、body 中挑你想驗證的就好了，不需要全部都寫
      */
-    validate: (zodSchema) => (async (req, res, next) => {
+    validate: (zodSchema) => wrap(async (req, res, next) => {
         let { success, data, error } = await zodSchema.safeParseAsync({
             body: req.body,
             query: req.query,
