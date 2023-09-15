@@ -11,9 +11,17 @@ if (!require('node:fs').existsSync('./config.json')) {
     return;
 }
 const rawConfig = require('./config.json');
+const DB = require('./db');
 
 const Config = z.object({
     sessionSecret: z.string(),
+    mysql: z.object({
+        host: z.string(),
+        port: z.number(),
+        user: z.string(),
+        password: z.string(),
+        dbname: z.string(),
+    }),
 });
 const config = Config.parse(rawConfig);
 
@@ -67,12 +75,21 @@ async function main() {
         resave: false,
         saveUninitialized: false,
     }));
-
     app.use(express.json());
+    const db = await DB.create({
+        host: config.mysql.host,
+        port: config.mysql.port,
+        user: config.mysql.user,
+        password: config.mysql.password,
+        dbname: config.mysql.dbname,
+    });
+    app.locals.db = db;
+
     app.get('/', (req, res) => {
         res.send('hello');
     });
     app.use('/cats', require('./routes/cats.js'));
+    app.use('/api/auth', require('./routes/auth.js'));
 
     app.use((err, req, res, next) => {
         req.error = err;
