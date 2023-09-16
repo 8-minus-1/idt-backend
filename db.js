@@ -16,14 +16,65 @@ module.exports = class DB {
             database: dbname,
             charset: 'utf8mb4',
         });
-        return new DB(pool);
+        return new DB({ pool });
     }
 
     /**
-     * @param {mysql.Pool} pool 
+     * @param {Object} options
+     * @param {mysql.Pool?} options.pool
+     * @param {mysql.PoolConnection?} options.poolConnection
      */
-    constructor(pool) {
-        this.pool = pool;
+    constructor({ pool, poolConnection }) {
+        if (pool && poolConnection) {
+            throw new Error('pool 跟 poolConnection 只能選一個傳入');
+        }
+        if (pool) {
+            this.pool = pool;
+            this.usePool = true;
+        } else if (poolConnection) {
+            this.poolConnection = poolConnection;
+            this.usePool = false;
+        } else {
+            throw new Error('pool 跟 poolConnection 必須選一個傳入');
+        }
+    }
+
+    get db() {
+        if (this.usePool) {
+            return this.pool;
+        }
+        return this.poolConnection;
+    }
+
+    /**
+     * @callback DoWithTransactionDb
+     * @param {DB} db Transaction 專用 DB instance
+     * @returns {Promise<void>}
+     */
+
+    /**
+     * 取得一 connection 並開始一個新的 transaction。
+     * @param {DoWithTransactionDb} fn
+     * 在此 function 內的對 db 做的動作都將視為 transaction 的一部分，
+     * 執行完後會自動 commit。執行過程中若拋出例外將自動 rollback。
+     * @returns {Promise<void>}
+     */
+    async withTransaction(fn) {
+        if (!this.usePool) {
+            throw new Error('此 DB instance 已為 transaction 專用。');
+        }
+        let conn = await this.pool.getConnection();
+        let transactionDb = new DB({ poolConnection: conn });
+        try {
+            await conn.beginTransaction();
+            await fn(transactionDb);
+            await conn.commit();
+        } catch (e) {
+            await conn.rollback();
+            throw e;
+        } finally {
+            conn.release();
+        }
     }
 
     /**
@@ -31,7 +82,7 @@ module.exports = class DB {
      * @returns {Promise<boolean>}
      */
     async isEmailRegistered(email) {
-        const results = await this.pool.query(
+        const results = await this.db.query(
             'SELECT COUNT(*) as count FROM users WHERE email = ?',
             email,
         );
@@ -45,7 +96,7 @@ module.exports = class DB {
             created_at: Date.now(),
             used_at: null,
         };
-        await this.pool.query(
+        await this.db.query(
             'REPLACE INTO email_verification_codes SET ?',
             fields,
         );
@@ -53,7 +104,7 @@ module.exports = class DB {
 
     async getEmailVerificationToken(email) {
         let columns = ['email', 'token', 'created_at', 'used_at'];
-        let results = await this.pool.query(
+        let results = await this.db.query(
             'SELECT ?? FROM email_verification_codes WHERE email = ?',
             [columns, email],
         );
@@ -62,7 +113,7 @@ module.exports = class DB {
     }
 
     async markEmailVerificationTokenAsUsed(email) {
-        await this.pool.query(
+        await this.db.query(
             'UPDATE email_verification_codes SET ? WHERE email = ?',
             [{ used_at: Date.now() }, email],
         );
@@ -72,10 +123,10 @@ module.exports = class DB {
      * 
      * @param {string} email 
      * @param {number} when 
-     * @returns {number} Number of attempts
+     * @returns {Promise<number>} Number of attempts
      */
     async getSendVerificationEmailAttemptsSince(email, when) {
-        let results = await this.pool.query(
+        let results = await this.db.query(
             'SELECT COUNT(*) as count FROM send_verification_email_attempts WHERE email = ? AND created_at > ?',
             [email, when],
         );
@@ -83,7 +134,7 @@ module.exports = class DB {
     }
 
     async recordSendEmailVerificationAttempt(email) {
-        await this.pool.query(
+        await this.db.query(
             'INSERT INTO send_verification_email_attempts SET ?',
             { email, created_at: Date.now() },
         );
