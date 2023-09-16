@@ -175,7 +175,7 @@ module.exports = class DB {
         return results[0];
     }
 
-    
+
     /* ----- Start of functions for QA ----- */
     /**
      *
@@ -186,7 +186,7 @@ module.exports = class DB {
      *
      */
     async addQuestion(user_id, sp_type, q_title, q_content) {
-        await this.pool.query(
+        await this.db.query(
             'INSERT INTO QA_question SET ?',
             { user_id: user_id, sp_type: sp_type, q_title: q_title, q_content: q_content, timestamp: Date.now() },
         );
