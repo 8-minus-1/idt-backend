@@ -247,7 +247,9 @@ router.post('/fakeSignin', wrap(async (req, res) => {
         id: 1234,
         profileCompleted: false,
     };
-    res.send("{ Signed in with user id 1234! }");
+    res.send({
+        message: "Fake Signed in as user 1234!"
+    });
 }));
 
 // exports the router and the checkUserSession function

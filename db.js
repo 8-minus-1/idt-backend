@@ -191,5 +191,19 @@ module.exports = class DB {
             { user_id: user_id, sp_type: sp_type, q_title: q_title, q_content: q_content, timestamp: Date.now() },
         );
     }
+
+    /**
+     *
+     * @param {number} user_id
+     * @param {number} q_id
+     * @param {string} a_content
+     *
+     */
+    async addAnswer(user_id, q_id, a_content) {
+        await this.db.query(
+            'INSERT INTO QA_answer SET ?',
+            { user_id: user_id, q_id: q_id, a_content: a_content, timestamp: Date.now() },
+        );
+    }
     /* ----- End of functions for QA ----- */
 }
