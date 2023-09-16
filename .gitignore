@@ -28,3 +28,5 @@ config.json
 
 /data/*
 !.gitkeep
+
+/.idea

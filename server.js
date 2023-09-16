@@ -1,5 +1,5 @@
 const express = require('express');
-const morgan = require('morgan');
+const morgan = require('morgan'); // HTTP Request logger
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
 const z = require('zod');
@@ -88,8 +88,10 @@ async function main() {
     app.get('/', (req, res) => {
         res.send('hello');
     });
+
     app.use('/cats', require('./routes/cats.js'));
     app.use('/api/auth', require('./routes/auth.js'));
+    app.use('/api/qa', require('./routes/qa.js'));
 
     app.use((err, req, res, next) => {
         req.error = err;
