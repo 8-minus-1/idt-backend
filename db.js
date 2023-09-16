@@ -139,4 +139,39 @@ module.exports = class DB {
             { email, created_at: Date.now() },
         );
     }
+
+    async addUser(email, password) {
+        await this.db.query(
+            'INSERT INTO users SET ?',
+            { email, password, created_at: Date.now() },
+        );
+    }
+
+    async setUserPassword(email, password) {
+        await this.db.query(
+            'UPDATE users SET ? WHERE email = ?',
+            [{ password }, email],
+        );
+    }
+
+    /**
+     * @param {number} id 
+     */
+    async getUser(id) {
+        let results = await this.db.query(
+            'SELECT id, email, phone FROM users WHERE id = ?',
+            id,
+        );
+        if (!results.length) return null;
+        return results[0];
+    }
+
+    async getUserByEmail(email) {
+        let results = await this.db.query(
+            'SELECT id, email, phone, password FROM users WHERE email = ?',
+            email,
+        );
+        if (!results.length) return null;
+        return results[0];
+    }
 }
