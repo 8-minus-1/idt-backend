@@ -2,12 +2,12 @@ const express = require('express');
 const z = require('zod');
 const { validate, wrap } = require('../utils');
 const DB = require('../db');
+const auth = require('./auth');
 
 // TODO: 直接用 api 或 function 檢查登入狀態以及取得 user_id
 
 const AddQuestionSchema = z.object({
     body: z.object({
-        user_id: z.number().nonnegative(),
         sp_type: z.number(),
         q_title: z.string().max(30).min(2),
         q_content: z.string().min(2),
@@ -16,7 +16,6 @@ const AddQuestionSchema = z.object({
 
 const AddAnswerSchema = z.object({
     body: z.object({
-        user_id: z.number().nonnegative(),
         q_id: z.number(),
         a_content: z.string().min(10),
     }),
@@ -36,17 +35,18 @@ const GetAnswersSchema = z.object({
 
 const router = express.Router();
 
-router.post('/addQuestion', validate(AddQuestionSchema), wrap(async(req, res) => {
+// 先檢查登入狀態，確認已登入後存資料
+router.post('/addQuestion', auth.checkUserSession, validate(AddQuestionSchema), wrap(async(req, res) => {
     /**
      * @type {DB}
      */
     const db = req.app.locals.db;
-    const user_id = req.body.user_id;
+    const user_id = req.session.user.id;
     const sp_type = req.body.sp_type;
     const q_title = req.body.q_title;
     const q_content = req.body.q_content;
     await db.addQuestion(user_id, sp_type, q_title, q_content);
-    res.send(`{ Question Added with title "${q_title}" by user ${user_id}`);
+    res.send(`{ Question Added with title "${q_title}" by user ${user_id} }`);
 }));
 
 router.post('/addAnswer', validate(AddAnswerSchema), wrap(async(req, res) => {

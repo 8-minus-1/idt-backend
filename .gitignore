@@ -29,4 +29,4 @@ config.json
 /data/*
 !.gitkeep
 
-/.idea
+/.idea/*

@@ -90,7 +90,7 @@ async function main() {
     });
 
     app.use('/cats', require('./routes/cats.js'));
-    app.use('/api/auth', require('./routes/auth.js'));
+    app.use('/api/auth', require('./routes/auth.js').router);
     app.use('/api/qa', require('./routes/qa.js'));
 
     app.use((err, req, res, next) => {

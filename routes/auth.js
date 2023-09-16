@@ -240,4 +240,16 @@ router.post('/signout', wrap(async (req, res) => {
     res.end();
 }));
 
-module.exports = router;
+// 模擬登入行為, to test features that requires checking auth status, without creating a real account
+// this function just simply create session to store a testing user_id
+router.post('/fakeSignin', wrap(async (req, res) => {
+    req.session.user = {
+        id: 1234,
+        profileCompleted: false,
+    };
+    res.send("{ Signed in with user id 1234! }");
+}));
+
+// exports the router and the checkUserSession function
+// 在其他檔案也可以直接引入，以確定登入狀態
+module.exports = {router, checkUserSession};
