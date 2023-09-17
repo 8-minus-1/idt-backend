@@ -21,13 +21,13 @@ const AddAnswerSchema = z.object({
 
 const GetQuestionsSchema = z.object({
     query: z.object({
-        sp_type: z.string().refine((val) => !Number.isNaN(parseInt(val, 10)), {message: "Expected number"}).optional(),
+        sp_type: z.string().refine((val) => !Number.isNaN(parseInt(val, 10)), {message: "Expected number"}).optional()
     }),
 });
 
 const GetAnswersSchema = z.object({
     query: z.object({
-        q_id: z.number(),
+        q_id: z.string().refine((val) => !Number.isNaN(parseInt(val, 10)), {message: "Expected number"})
     }),
 });
 
@@ -61,14 +61,15 @@ router.post('/addAnswer', auth.checkUserSession, validate(AddAnswerSchema), wrap
     const q_id = req.body.q_id;
     const a_content = req.body.a_content;
 
-    let exist = await db.checkQuestionExistence(q_id);
-    if(exist)
+    let question = await db.getQuestionById(q_id);
+    if(question.length)
     {
         //TODO: 是否是原Po
         await db.addAnswer(user_id, q_id, a_content);
         res.send({
             status: "OK",
             question_id: q_id,
+            q_title: question[0].q_title,
             answer: a_content
         });
     }
@@ -98,7 +99,21 @@ router.get('/getQuestions', validate(GetQuestionsSchema), wrap(async(req, res) =
 }));
 
 router.get('/getAnswers', validate(GetAnswersSchema), wrap(async(req, res) => {
-    res.send({});
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const q_id = parseInt(req.query.q_id);
+    let question = await db.getQuestionById(q_id)
+    if(!question.length)
+    {
+        res.status(400).send({error: "Question Not Found!"});
+    }
+    else
+    {
+        let answers = await db.getAnswers(q_id);
+        res.send({question: question, answers: answers});
+    }
 }));
 
 module.exports = router;

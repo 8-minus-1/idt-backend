@@ -192,14 +192,13 @@ module.exports = class DB {
         );
     }
 
-    async checkQuestionExistence(q_id){
-        let results = await this.db.query(
-            'SELECT q_id FROM QA_question WHERE q_id = ?',
+    async getQuestionById(q_id){
+        let result = await this.db.query(
+            'SELECT * FROM QA_question WHERE q_id = ?',
             q_id,
         )
 
-        if(!results.length) return false;
-        else return true;
+        return result;
     }
 
     /**
@@ -228,6 +227,18 @@ module.exports = class DB {
             'SELECT * FROM QA_question WHERE sp_type = ? ORDER BY `QA_question`.`timestamp` DESC',
             sp_type
         );
+        return results;
+    }
+
+    /**
+     * @param {number} q_id
+     */
+    async getAnswers(q_id)
+    {
+        let results = await this.db.query(
+            'SELECT * FROM QA_answer WHERE q_id = ?',
+            q_id
+        )
         return results;
     }
     /* ----- End of functions for QA ----- */
