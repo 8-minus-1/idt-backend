@@ -241,5 +241,13 @@ module.exports = class DB {
         )
         return results;
     }
+
+    async editQuestion(q_id, sp_type, q_title, q_content)
+    {
+        await this.db.query(
+            'UPDATE QA_question SET ? WHERE q_id = ?',
+            [{sp_type: sp_type, q_title: q_title, q_content: q_content}, q_id]
+        )
+    }
     /* ----- End of functions for QA ----- */
 }
