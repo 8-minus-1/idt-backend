@@ -13,37 +13,48 @@ const AddQuestionSchema = z.object({
 });
 
 const AddAnswerSchema = z.object({
+    params: z.object({
+        q_id: z.coerce.number(), // corresponding question id
+    }),
     body: z.object({
-        q_id: z.number(), // corresponding question id
         a_content: z.string().min(10),
     }),
 });
 
 const GetQuestionsSchema = z.object({
     query: z.object({
-        sp_type: z.string().refine((val) => !Number.isNaN(parseInt(val, 10)), {message: "Expected number"}).optional()
+        sp_type: z.coerce.number().optional()
     }),
 });
 
 const GetAnswersSchema = z.object({
-    query: z.object({
-        q_id: z.string().refine((val) => !Number.isNaN(parseInt(val, 10)), {message: "Expected number"})
+    params: z.object({
+        q_id: z.coerce.number()
     }),
 });
 
 const EditQuestionSchema = z.object({
+    params: z.object({
+        q_id: z.coerce.number(),
+    }),
     body: z.object({
-        q_id: z.number(),
         sp_type: z.number(),
         q_title: z.string().max(30).min(2),
         q_content: z.string().min(2),
     })
 })
 
+const DeleteQSchema = z.object({
+    params: z.object({
+        q_id: z.coerce.number()
+    })
+})
+
 const router = express.Router();
 
 // 先檢查登入狀態，確認已登入後存資料
-router.post('/addQuestion', auth.checkUserSession, validate(AddQuestionSchema), wrap(async(req, res) => {
+// add question
+router.post('/questions', auth.checkUserSession, validate(AddQuestionSchema), wrap(async(req, res) => {
     /**
      * @type {DB}
      */
@@ -61,19 +72,19 @@ router.post('/addQuestion', auth.checkUserSession, validate(AddQuestionSchema), 
     });
 }));
 
-router.post('/addAnswer', auth.checkUserSession, validate(AddAnswerSchema), wrap(async(req, res) => {
+// add answer
+router.post('/questions/:q_id/answers', auth.checkUserSession, validate(AddAnswerSchema), wrap(async(req, res) => {
     /**
      * @type {DB}
      */
     const db = req.app.locals.db;
     const user_id = req.session.user.id;
-    const q_id = req.body.q_id;
+    const q_id = req.params.q_id;
     const a_content = req.body.a_content;
 
     let question = await db.getQuestionById(q_id);
     if(question.length)
     {
-        //TODO: 是否是原Po
         await db.addAnswer(user_id, q_id, a_content);
         res.send({
             status: "OK",
@@ -90,12 +101,13 @@ router.post('/addAnswer', auth.checkUserSession, validate(AddAnswerSchema), wrap
     }
 }));
 
-router.get('/getQuestions', validate(GetQuestionsSchema), wrap(async(req, res) => {
+// get all questions (of a type of sport)
+router.get('/questions', validate(GetQuestionsSchema), wrap(async(req, res) => {
     /**
      * @type {DB}
      */
     const db = req.app.locals.db;
-    const sp_type = parseInt(req.query.sp_type);
+    const sp_type = req.query.sp_type;
     let results = await db.getQuestions(sp_type);
     if(!results.length)
     {
@@ -107,12 +119,13 @@ router.get('/getQuestions', validate(GetQuestionsSchema), wrap(async(req, res) =
     }
 }));
 
-router.get('/getAnswers', validate(GetAnswersSchema), wrap(async(req, res) => {
+// get answers of a question
+router.get('/questions/:q_id/answers', validate(GetAnswersSchema), wrap(async(req, res) => {
     /**
      * @type {DB}
      */
     const db = req.app.locals.db;
-    const q_id = parseInt(req.query.q_id);
+    const q_id = req.params.q_id;
     let question = await db.getQuestionById(q_id)
     if(!question.length)
     {
@@ -125,13 +138,14 @@ router.get('/getAnswers', validate(GetAnswersSchema), wrap(async(req, res) => {
     }
 }));
 
-router.post('/editQuestion', auth.checkUserSession, validate(EditQuestionSchema), wrap(async(req, res) => {
+// Edit Question
+router.put('/question/:q_id', auth.checkUserSession, validate(EditQuestionSchema), wrap(async(req, res) => {
     /**
      * @type {DB}
      */
     const db = req.app.locals.db;
     const user_id = req.session.user.id;
-    const q_id = req.body.q_id;
+    const q_id = req.params.q_id;
     const sp_type = req.body.sp_type;
     const q_title = req.body.q_title;
     const q_content = req.body.q_content;
@@ -155,7 +169,11 @@ router.post('/editQuestion', auth.checkUserSession, validate(EditQuestionSchema)
            q_content: q_content
         });
     }
+}));
 
+router.delete('/questions/:q_id', auth.checkUserSession, validate(DeleteQSchema), wrap(async (req, res)=>{
+    const q_id = req.params.q_id;
+    res.send({q_id: q_id});
 }));
 
 module.exports = router;
