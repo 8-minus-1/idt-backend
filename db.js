@@ -236,7 +236,7 @@ module.exports = class DB {
     async getAnswers(q_id)
     {
         let results = await this.db.query(
-            'SELECT * FROM QA_answer WHERE q_id = ? ORDER BY `QA_answer`.`timestamp` DESC',
+            'SELECT * FROM QA_answer WHERE q_id = ? ORDER BY `QA_answer`.`timestamp` ASC',
             q_id
         )
         return results;
