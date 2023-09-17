@@ -21,7 +21,7 @@ const AddAnswerSchema = z.object({
 
 const GetQuestionsSchema = z.object({
     query: z.object({
-        sp_type: z.number(),
+        sp_type: z.string().refine((val) => !Number.isNaN(parseInt(val, 10)), {message: "Expected number"}).optional(),
     }),
 });
 
@@ -81,7 +81,20 @@ router.post('/addAnswer', auth.checkUserSession, validate(AddAnswerSchema), wrap
 }));
 
 router.get('/getQuestions', validate(GetQuestionsSchema), wrap(async(req, res) => {
-    res.send({});
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const sp_type = parseInt(req.query.sp_type);
+    let results = await db.getQuestions(sp_type);
+    if(!results.length)
+    {
+        res.status(400).send({error: "尚無此類別的問題"});
+    }
+    else
+    {
+        res.send(results);
+    }
 }));
 
 router.get('/getAnswers', validate(GetAnswersSchema), wrap(async(req, res) => {

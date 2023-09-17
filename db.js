@@ -215,5 +215,20 @@ module.exports = class DB {
             { user_id: user_id, q_id: q_id, a_content: a_content, timestamp: Date.now() },
         );
     }
+
+    /**
+     * @param {number} sp_type
+     */
+    async getQuestions(sp_type)
+    {
+        let results =
+            (!sp_type)? await this.db.query(
+            'SELECT * FROM QA_question ORDER BY `QA_question`.`timestamp` DESC'
+        ): await this.db.query(
+            'SELECT * FROM QA_question WHERE sp_type = ? ORDER BY `QA_question`.`timestamp` DESC',
+            sp_type
+        );
+        return results;
+    }
     /* ----- End of functions for QA ----- */
 }
