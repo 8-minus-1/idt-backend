@@ -192,6 +192,16 @@ module.exports = class DB {
         );
     }
 
+    async checkQuestionExistence(q_id){
+        let results = await this.db.query(
+            'SELECT q_id FROM QA_question WHERE q_id = ?',
+            q_id,
+        )
+
+        if(!results.length) return false;
+        else return true;
+    }
+
     /**
      *
      * @param {number} user_id

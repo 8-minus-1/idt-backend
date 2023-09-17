@@ -60,13 +60,24 @@ router.post('/addAnswer', auth.checkUserSession, validate(AddAnswerSchema), wrap
     const user_id = req.session.user.id;
     const q_id = req.body.q_id;
     const a_content = req.body.a_content;
-    // TODO: Check if the question exists
-    await db.addAnswer(user_id, q_id, a_content);
-    res.send({
-        status: "OK",
-        question_id: q_id,
-        answer: a_content
-    });
+
+    let exist = await db.checkQuestionExistence(q_id);
+    if(exist)
+    {
+        //TODO: 是否是原Po
+        await db.addAnswer(user_id, q_id, a_content);
+        res.send({
+            status: "OK",
+            question_id: q_id,
+            answer: a_content
+        });
+    }
+    else
+    {
+        res.status(400).send({
+            message: "Question Not Found"
+        })
+    }
 }));
 
 router.get('/getQuestions', validate(GetQuestionsSchema), wrap(async(req, res) => {
