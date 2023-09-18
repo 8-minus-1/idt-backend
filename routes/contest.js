@@ -10,9 +10,9 @@ const AddContestSchema = z.object({
         Content: z.string(),
         Place: z.string(),
         Category: z.string(),
-        StartDate: z.date(),
-        EndDate: z.date(),
-        Deadline: z.date(),
+        StartDate: z.string(),
+        EndDate: z.string(),
+        Deadline: z.string(),
         Url: z.string(),
         Other: z.string()
         // sp_type: z.number(),
@@ -23,29 +23,30 @@ const AddContestSchema = z.object({
 
 const router = express.Router();
 
-// router.post('/contest', auth.checkUserSession, validate(AddContestSchema), wrap(async(req, res) => {
-//     /**
-//      * @type {DB}
-//      */
+router.post('/contests', auth.checkUserSession/**/, validate(AddContestSchema), wrap(async(req, res) => {
+     /**
+      * @type {DB}
+      */
 
-//     const db = req.app.locals.db;
-//     const User_id = req.session.user.id;
-//     const Name = req.body.Name;
-//     const Content = req.body.Content;
-//     const Place = req.body.Place;
-//     const Category = req.body.Category;
-//     const StartDate = req.body.StartDate;
-//     const EndDate = req.body.EndDate;
-//     const Deadline = req.body.Deadline;
-//     const Url = req.body.Url;
-//     const Other = req.body.Other;
-//     await db.addQuestion(User_id, Name, Content, Place, Category, StartDate, EndDate, Deadline, Url, Other);
-//     res.send({
-//         status: "OK",
-//         user: User_id,
-//         Name: Name,
-//     });
-// }));
+     const db = req.app.locals.db;
+     const User_id = req.session.user.id;
+     //const User_id = "Test";
+     const Name = req.body.Name;
+     const Content = req.body.Content;
+     const Place = req.body.Place;
+     const Category = req.body.Category;
+     const StartDate = req.body.StartDate;
+     const EndDate = req.body.EndDate;
+     const Deadline = req.body.Deadline;
+     const Url = req.body.Url;
+     const Other = req.body.Other;
+     await db.addContest(User_id, Name, Content, Place, Category, StartDate, EndDate, Deadline, Url, Other);
+     res.send({
+        status: "Success!!",
+        user: User_id,
+        Name: Name,
+    });
+}));
 
 router.get('/contests', wrap(async(req, res) => {
     
