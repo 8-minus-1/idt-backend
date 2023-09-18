@@ -92,6 +92,7 @@ async function main() {
     app.use('/cats', require('./routes/cats.js'));
     app.use('/api/auth', require('./routes/auth.js').router);
     app.use('/api/qa', require('./routes/qa.js'));
+    app.use('/api/cont', require('./routes/contest.js'));
 
     app.use((err, req, res, next) => {
         req.error = err;
