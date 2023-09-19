@@ -201,6 +201,15 @@ module.exports = class DB {
         return result;
     }
 
+    async getAnswerById(a_id){
+        let result = await this.db.query(
+            'SELECT * FROM QA_answer WHERE a_id = ?',
+            a_id,
+        )
+
+        return result;
+    }
+
     /**
      *
      * @param {number} user_id

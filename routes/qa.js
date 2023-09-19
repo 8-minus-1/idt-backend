@@ -27,6 +27,18 @@ const GetQuestionsSchema = z.object({
     }),
 });
 
+const getQuestionByIdSchema = z.object({
+    params: z.object({
+        q_id: z.coerce.number()
+    })
+});
+
+const getAnswerByIdSchema = z.object({
+    params: z.object({
+        a_id: z.coerce.number()
+    })
+});
+
 const GetAnswersSchema = z.object({
     params: z.object({
         q_id: z.coerce.number()
@@ -95,7 +107,7 @@ router.post('/questions/:q_id/answers', auth.checkUserSession, validate(AddAnswe
     }
     else
     {
-        res.status(400).send({
+        res.status(404).send({
             message: "Question Not Found"
         })
     }
@@ -119,6 +131,25 @@ router.get('/questions', validate(GetQuestionsSchema), wrap(async(req, res) => {
     }
 }));
 
+router.get('/questions/:q_id', validate(getQuestionByIdSchema), wrap(async (req, res)=>{
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const q_id = req.params.q_id;
+
+    let question = await db.getQuestionById(q_id);
+
+    if(!question.length)
+    {
+        res.status(404).send({error: "Question Not Found!"});
+    }
+    else
+    {
+        res.send({question});
+    }
+}));
+
 // get answers of a question
 router.get('/questions/:q_id/answers', validate(GetAnswersSchema), wrap(async(req, res) => {
     /**
@@ -129,12 +160,31 @@ router.get('/questions/:q_id/answers', validate(GetAnswersSchema), wrap(async(re
     let question = await db.getQuestionById(q_id)
     if(!question.length)
     {
-        res.status(400).send({error: "Question Not Found!"});
+        res.status(404).send({error: "Question Not Found!"});
     }
     else
     {
         let answers = await db.getAnswers(q_id);
-        res.send({question: question, answers: answers});
+        res.send({question, answers});
+    }
+}));
+
+router.get('/answers/:a_id', validate(getAnswerByIdSchema), wrap(async (req, res)=>{
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const a_id = req.params.a_id;
+
+    let answer = await db.getAnswerById(a_id);
+
+    if(!answer.length)
+    {
+        res.status(404).send({error: "Answer Not Found!"});
+    }
+    else
+    {
+        res.send({answer});
     }
 }));
 
@@ -152,7 +202,7 @@ router.put('/question/:q_id', auth.checkUserSession, validate(EditQuestionSchema
     let question = await db.getQuestionById(q_id);
     if(!question.length)
     {
-        res.status(400).send({error: "Question Not Found!"});
+        res.status(404).send({error: "Question Not Found!"});
     }
     else if(question[0].user_id !== user_id)
     {
