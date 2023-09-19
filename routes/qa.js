@@ -3,6 +3,7 @@ const z = require('zod');
 const { validate, wrap } = require('../utils');
 const DB = require('../db');
 const auth = require('./auth');
+const {checkUserSession} = require("./auth");
 
 const AddQuestionSchema = z.object({
     body: z.object({
@@ -239,5 +240,30 @@ router.delete('/questions/:q_id', auth.checkUserSession, validate(getQuestionByI
         res.send({message: "Success", deleted: question[0]});
     }
 }));
+
+router.delete('/answers/:a_id', auth.checkUserSession, validate(getAnswerByIdSchema), wrap(async (req, res)=>{
+    /**
+     * @type {DB}
+     */
+    const user_id = req.session.user.id;
+    const db = req.app.locals.db;
+    const a_id = req.params.a_id;
+
+    let answer = await db.getAnswerById(a_id);
+
+    if(!answer.length)
+    {
+        res.status(404).send({error: "Answer Not Found!"});
+    }
+    else if(answer[0].user_id !== user_id)
+    {
+        res.status(401).send({error: "permission denied"});
+    }
+    else
+    {
+        await db.deleteAnswerById(a_id);
+        res.send({message: "success", deleted: answer[0]});
+    }
+}))
 
 module.exports = router;

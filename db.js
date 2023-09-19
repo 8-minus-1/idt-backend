@@ -261,6 +261,18 @@ module.exports = class DB {
             'DELETE FROM `QA_question` WHERE `q_id` = ?',
             q_id
         )
+        await this.db.query(
+            'DELETE FROM `QA_answer` WHERE `q_id` = ?',
+            q_id
+        )
+    }
+
+    async deleteAnswerById(a_id)
+    {
+        await this.db.query(
+            'DELETE FROM `QA_answer` WHERE `a_id` = ?',
+            a_id
+        )
     }
     /* ----- End of functions for QA ----- */
 
