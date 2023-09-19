@@ -258,7 +258,16 @@ module.exports = class DB {
             [{sp_type: sp_type, q_title: q_title, q_content: q_content}, q_id]
         )
     }
+
+    async deleteQuestionById(q_id)
+    {
+        await this.db.query(
+            'DELETE FROM `QA_question` WHERE `q_id` = ?',
+            q_id
+        )
+    }
     /* ----- End of functions for QA ----- */
+
     /* ----- Start of functions for Contest ----- */
     async addContest(User_id, Name, Content, Place, Category, StartDate, EndDate, Deadline, Url, Other) {
         await this.db.query(

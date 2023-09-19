@@ -56,12 +56,6 @@ const EditQuestionSchema = z.object({
     })
 })
 
-const DeleteQSchema = z.object({
-    params: z.object({
-        q_id: z.coerce.number()
-    })
-})
-
 const router = express.Router();
 
 // 先檢查登入狀態，確認已登入後存資料
@@ -108,7 +102,7 @@ router.post('/questions/:q_id/answers', auth.checkUserSession, validate(AddAnswe
     else
     {
         res.status(404).send({
-            message: "Question Not Found"
+            error: "Question Not Found"
         })
     }
 }));
@@ -146,7 +140,7 @@ router.get('/questions/:q_id', validate(getQuestionByIdSchema), wrap(async (req,
     }
     else
     {
-        res.send({question});
+        res.send(question[0]);
     }
 }));
 
@@ -165,7 +159,7 @@ router.get('/questions/:q_id/answers', validate(GetAnswersSchema), wrap(async(re
     else
     {
         let answers = await db.getAnswers(q_id);
-        res.send({question, answers});
+        res.send({question: question[0], answers});
     }
 }));
 
@@ -184,7 +178,7 @@ router.get('/answers/:a_id', validate(getAnswerByIdSchema), wrap(async (req, res
     }
     else
     {
-        res.send({answer});
+        res.send(answer[0]);
     }
 }));
 
@@ -221,9 +215,29 @@ router.put('/question/:q_id', auth.checkUserSession, validate(EditQuestionSchema
     }
 }));
 
-router.delete('/questions/:q_id', auth.checkUserSession, validate(DeleteQSchema), wrap(async (req, res)=>{
+router.delete('/questions/:q_id', auth.checkUserSession, validate(getQuestionByIdSchema), wrap(async (req, res)=>{
+    /**
+     * @type {DB}
+     * */
+    const db = req.app.locals.db;
+    const user_id = req.session.user.id;
     const q_id = req.params.q_id;
-    res.send({q_id: q_id});
+
+    let question = await db.getQuestionById(q_id);
+
+    if(!question.length)
+    {
+        res.status(404).send({error: "Question Not Found!"});
+    }
+    else if(question[0].user_id !== user_id)
+    {
+        res.status(401).send({error: "permission denied"});
+    }
+    else
+    {
+        await db.deleteQuestionById(q_id);
+        res.send({message: "Success", deleted: question[0]});
+    }
 }));
 
 module.exports = router;
