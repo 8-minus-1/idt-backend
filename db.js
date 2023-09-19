@@ -192,7 +192,7 @@ module.exports = class DB {
         );
     }
 
-    async getQuestionById(q_id){
+    async getQuestionById(q_id) {
         let result = await this.db.query(
             'SELECT * FROM QA_question WHERE q_id = ?',
             q_id,
@@ -201,7 +201,7 @@ module.exports = class DB {
         return result;
     }
 
-    async getAnswerById(a_id){
+    async getAnswerById(a_id) {
         let result = await this.db.query(
             'SELECT * FROM QA_answer WHERE a_id = ?',
             a_id,
@@ -227,23 +227,21 @@ module.exports = class DB {
     /**
      * @param {number} sp_type
      */
-    async getQuestions(sp_type)
-    {
+    async getQuestions(sp_type) {
         let results =
-            (!sp_type)? await this.db.query(
-            'SELECT * FROM QA_question ORDER BY `QA_question`.`timestamp` DESC'
-        ): await this.db.query(
-            'SELECT * FROM QA_question WHERE sp_type = ? ORDER BY `QA_question`.`timestamp` DESC',
-            sp_type
-        );
+            (!sp_type) ? await this.db.query(
+                'SELECT * FROM QA_question ORDER BY `QA_question`.`timestamp` DESC'
+            ) : await this.db.query(
+                'SELECT * FROM QA_question WHERE sp_type = ? ORDER BY `QA_question`.`timestamp` DESC',
+                sp_type
+            );
         return results;
     }
 
     /**
      * @param {number} q_id
      */
-    async getAnswers(q_id)
-    {
+    async getAnswers(q_id) {
         let results = await this.db.query(
             'SELECT * FROM QA_answer WHERE q_id = ? ORDER BY `QA_answer`.`timestamp` ASC',
             q_id
@@ -251,16 +249,14 @@ module.exports = class DB {
         return results;
     }
 
-    async editQuestion(q_id, sp_type, q_title, q_content)
-    {
+    async editQuestion(q_id, sp_type, q_title, q_content) {
         await this.db.query(
             'UPDATE QA_question SET ? WHERE q_id = ?',
-            [{sp_type: sp_type, q_title: q_title, q_content: q_content}, q_id]
+            [{ sp_type: sp_type, q_title: q_title, q_content: q_content }, q_id]
         )
     }
 
-    async deleteQuestionById(q_id)
-    {
+    async deleteQuestionById(q_id) {
         await this.db.query(
             'DELETE FROM `QA_question` WHERE `q_id` = ?',
             q_id
@@ -272,17 +268,34 @@ module.exports = class DB {
     async addContest(User_id, Name, Content, Place, Category, StartDate, EndDate, Deadline, Url, Other) {
         await this.db.query(
             'INSERT INTO Contest SET ?',
-            { User_id: User_id, Name: Name, Content: Content, Place: Place, Category: Category, StartDate: StartDate, EndDate: EndDate, Deadline: Deadline,Url: Url, Other:Other},
+            { User_id: User_id, Name: Name, Content: Content, Place: Place, Category: Category, StartDate: StartDate, EndDate: EndDate, Deadline: Deadline, Url: Url, Other: Other },
         );
     }
 
-    async getContest()
-    {
+    async getContest() {
         let results = await this.db.query(
             'SELECT * FROM Contest'
         );
-        
+
         return results;
     }
     /* ----- End of functions for Contest ----- */
+
+    /* -------- Map start form here -------- */
+    async addMap(Name, Latitude, Longitude, Address, Url, Phone, Renew, User) {
+        await this.db.query(
+            'INSERT INTO Map SET ?',
+            { Name, Latitude, Longitude, Address, Url, Phone, Renew: Date.now(), User },
+        );
+    }
+
+    async getPositionId(ID) {
+        let result = await this.db.query(
+            'SELECT * FROM Map WHERE ID = ?',
+            ID,
+        )
+        return result.length;
+    }
+
+    /* -------- Map end here -------- */
 }
