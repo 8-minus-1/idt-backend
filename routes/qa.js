@@ -304,4 +304,6 @@ router.delete('/answers/:a_id', auth.checkUserSession, validate(getAnswerByIdSch
     }
 }))
 
+const a = 0;
+
 module.exports = router;
