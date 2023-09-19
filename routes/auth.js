@@ -240,15 +240,22 @@ router.post('/signout', wrap(async (req, res) => {
     res.end();
 }));
 
+const fakeSigninSchema = z.object({
+    body: z.object({
+        user_id: z.number()
+    })
+})
+
 // 模擬登入行為, to test features that requires checking auth status, without creating a real account
 // this function just simply create session to store a testing user_id
-router.post('/fakeSignin', wrap(async (req, res) => {
+router.post('/fakeSignin', validate(fakeSigninSchema), wrap(async (req, res) => {
+    const user_id = req.body.user_id;
     req.session.user = {
-        id: 1234,
+        id: user_id,
         profileCompleted: false,
     };
     res.send({
-        message: "Fake Signed in as user 1234!"
+        message: "Fake signed in as user "+user_id+"!"
     });
 }));
 
