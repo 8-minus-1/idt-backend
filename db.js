@@ -252,7 +252,14 @@ module.exports = class DB {
     async editQuestion(q_id, sp_type, q_title, q_content) {
         await this.db.query(
             'UPDATE QA_question SET ? WHERE q_id = ?',
-            [{ sp_type: sp_type, q_title: q_title, q_content: q_content }, q_id]
+            [{ sp_type: sp_type, q_title: q_title, q_content: q_content, last_edit: Date.now() }, q_id]
+        )
+    }
+
+    async editAnswer(a_id, a_content) {
+        await this.db.query(
+            'UPDATE QA_answer SET ? WHERE a_id = ?',
+            [{ a_content: a_content, last_edit: Date.now() }, a_id]
         )
     }
 

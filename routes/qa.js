@@ -57,6 +57,15 @@ const EditQuestionSchema = z.object({
     })
 })
 
+const editAnswerSchema = z.object({
+    params: z.object({
+        a_id: z.coerce.number()
+    }),
+    body: z.object({
+        a_content: z.string().min(10)
+    })
+})
+
 const router = express.Router();
 
 // 先檢查登入狀態，確認已登入後存資料
@@ -184,7 +193,7 @@ router.get('/answers/:a_id', validate(getAnswerByIdSchema), wrap(async (req, res
 }));
 
 // Edit Question
-router.put('/question/:q_id', auth.checkUserSession, validate(EditQuestionSchema), wrap(async(req, res) => {
+router.put('/questions/:q_id', auth.checkUserSession, validate(EditQuestionSchema), wrap(async(req, res) => {
     /**
      * @type {DB}
      */
@@ -215,6 +224,35 @@ router.put('/question/:q_id', auth.checkUserSession, validate(EditQuestionSchema
         });
     }
 }));
+
+router.put('/answers/:a_id', auth.checkUserSession, validate(editAnswerSchema), wrap(async (req, res)=>{
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const user_id = req.session.user.id;
+    const a_id = req.params.a_id;
+    const a_content = req.body.a_content;
+
+    let answer = await db.getAnswerById(a_id);
+
+    if(!answer.length)
+    {
+        res.status(404).send({error: "Answer Not Found!"});
+    }
+    else if(answer[0].user_id !== user_id)
+    {
+        res.status(401).send({error: "permission denied"});
+    }
+    else
+    {
+        await db.editAnswer(a_id, a_content);
+        res.send({
+            status: "OK",
+            a_content: a_content
+        });
+    }
+}))
 
 router.delete('/questions/:q_id', auth.checkUserSession, validate(getQuestionByIdSchema), wrap(async (req, res)=>{
     /**
