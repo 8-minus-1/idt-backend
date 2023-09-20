@@ -14,7 +14,7 @@ module.exports = class DB {
             user,
             password,
             database: dbname,
-            charset: 'utf8mb4',
+            charset: 'utf8mb4'
         });
         return new DB({ pool });
     }
@@ -326,6 +326,7 @@ module.exports = class DB {
     }
 
     async getPositionByName(Name) {
+        console.log(Name);
         let result = await this.db.query(
             'SELECT * FROM Map WHERE Name = ?',
             Name,

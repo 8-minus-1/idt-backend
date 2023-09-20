@@ -26,7 +26,7 @@ const addRank = z.object({
 
 const getPosition = z.object({
     query: z.object({
-        Name: z.string(),
+        Name: z.string()
     }),
 });
 
@@ -74,11 +74,11 @@ router.get('/', validate(getPosition), wrap(async (req, res) => {
      * @type {DB}
      */
     const db = req.app.locals.db;
-    const Name = req.params.Name;
+    const Name = req.query.Name;
 
     let info = await db.getPositionByName(Name);
-
-    if(getPositionByName(Name).length)
+    let len = info.length;
+    if(len)
     {
         res.send(info);
     }
