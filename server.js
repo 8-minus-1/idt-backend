@@ -22,6 +22,29 @@ const Config = z.object({
         password: z.string(),
         dbname: z.string(),
     }),
+    email: z.object({
+        smtp: z.object({
+            host: z.string(),
+            port: z.number(),
+            user: z.string(),
+            password: z.string(),
+        }).optional(),
+        fromAddress: z.string().email(),
+        verificationUrlTemplate: z.string()
+            .refine((str) => ['email', 'token', 'flow']
+                .every(placeholder => str.includes(`{${placeholder}}`))
+            ),
+        registrationSubject: z.string(),
+        resetPasswordSubject: z.string(),
+    }).optional(),
+    smsService: z.object({
+        user: z.string(),
+        password: z.string(),
+    }).optional(),
+    verificationTestingReceiverCredentials: z.object({
+        telegramChatId: z.string(),
+        telegramBotToken: z.string(),
+    }).optional(),
 });
 const config = Config.parse(rawConfig);
 
@@ -61,8 +84,10 @@ async function main() {
     }));
     if (process.env.NODE_ENV === 'production') {
         app.set('trust proxy', 'loopback');
+        app.locals.isDev = false;
     } else {
-        app.use(morgan('common'));
+        app.use(morgan('common'))
+        app.locals.isDev = true;
     }
     app.use(session({
         store: new FileStore({
@@ -84,6 +109,7 @@ async function main() {
         dbname: config.mysql.dbname,
     });
     app.locals.db = db;
+    app.locals.config = config;
 
     app.get('/', (req, res) => {
         res.send('hello');

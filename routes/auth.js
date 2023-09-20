@@ -1,7 +1,10 @@
 const express = require('express');
 const z = require('zod');
 const uid = require('uid-safe');
+const Got = import('got');
 const crypto = require('node:crypto');
+const { readFile } = require('node:fs/promises');
+const path = require('node:path');
 const { validate, wrap } = require('../utils');
 const DB = require('../db');
 
@@ -79,12 +82,51 @@ router.post('/locateAccount', validate(LocateAccountRequest), wrap(async (req, r
     res.send({ emailRegistered });
 }));
 
+async function sendVerificationEmail(isDev, config, toAddress, token, isResetPassword) {
+    let basicEmailConfigSetUp = !!config.email;
+    let smtpSetUp = basicEmailConfigSetUp && !!config.email.smtp;
+    let testingReceiverSetUp = !!config.verificationTestingReceiverCredentials?.telegramChatId;
+    let shouldUseSmtp = !isDev && smtpSetUp;
+    let shouldUseTestingReceiver = isDev && testingReceiverSetUp;
+    if (!basicEmailConfigSetUp || (!shouldUseSmtp && !shouldUseTestingReceiver)) {
+        console.log('Skipping sending email');
+        return;
+    }
+    let templateFileName = isResetPassword ? 'reset-password-email.txt' : 'registration-email.txt';
+    let template = await readFile(path.join(__dirname, '..', 'templates', templateFileName), 'utf-8');
+    let flow = isResetPassword ? 'resetPassword' : 'register';
+    let targetUrl = config.email.verificationUrlTemplate
+        .replaceAll('{email}', encodeURIComponent(toAddress))
+        .replaceAll('{token}', encodeURIComponent(token))
+        .replaceAll('{flow}', encodeURIComponent(flow));
+    let subject = isResetPassword ? config.email.resetPasswordSubject : config.email.registrationSubject;
+    let content = template.replaceAll('{url}', targetUrl);
+    if (shouldUseSmtp) {
+        throw new Error('SMTP not implemented');
+    } else if (shouldUseTestingReceiver) {
+        let message = `From: ${config.email.fromAddress}
+To: ${toAddress}
+Subject: ${subject}
+
+${content.replaceAll('http', 'hxxp')}`;
+        let got = (await Got).default;
+        let { telegramBotToken, telegramChatId } = config.verificationTestingReceiverCredentials;
+
+        await got.post('https://api.telegram.org/bot' + telegramBotToken + '/sendMessage', {
+            json: {
+                chat_id: telegramChatId,
+                text: message,
+            },
+        });
+    }
+}
+
 router.post('/flow/email', validate(SendVerificationEmailRequest), wrap(async (req, res) => {
     //TODO: 檢查 recaptchaResponse
 
     /**
-         * @type {DB}
-         */
+     * @type {DB}
+     */
     const db = req.app.locals.db;
     const twentyFourHoursAgo = Date.now() - 86400 * 1000;
     const fiveMinsAgo = Date.now() - 5 * 60 * 1000;
@@ -105,6 +147,9 @@ router.post('/flow/email', validate(SendVerificationEmailRequest), wrap(async (r
     const token = await uid(32);
     await db.withTransaction(async (tdb) => {
         await tdb.setEmailVerificationToken(req.body.email, token);
+        let { isDev, config } = req.app.locals;
+        let isEmailRegistered = await db.isEmailRegistered(req.body.email);
+        await sendVerificationEmail(isDev, config, req.body.email, token, isEmailRegistered);
         await tdb.recordSendEmailVerificationAttempt(req.body.email);
     });
     res.status(200).end();

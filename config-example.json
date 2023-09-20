@@ -1,0 +1,20 @@
+{
+    "sessionSecret": "changeme!",
+    "mysql": {
+        "host": "localhost",
+        "port": 3306,
+        "user": "user",
+        "password": "password",
+        "dbname": "db"
+    },
+    "email": {
+        "fromAddress": "service@idttttttt.com",
+        "verificationUrlTemplate": "https://idttttttt.com/auth/email/{email}/{token}?flow={flow}",
+        "registrationSubject": "[○○平台] 帳號註冊驗證信",
+        "resetPasswordSubject": "[○○平台] 密碼重設驗證信"
+    },
+    "verificationTestingReceiverCredentials": {
+        "telegramChatId": "",
+        "telegramBotToken": ""
+    }
+}
