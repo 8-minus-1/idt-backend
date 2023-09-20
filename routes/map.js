@@ -20,9 +20,13 @@ const addPosition = z.object({
     }),
 });
 
+const addRank = z.object({
+    
+});
+
 const getPosition = z.object({
-    params: z.object({
-       
+    query: z.object({
+        Name: z.string(),
     }),
 });
 
@@ -70,12 +74,17 @@ router.get('/', validate(getPosition), wrap(async (req, res) => {
      * @type {DB}
      */
     const db = req.app.locals.db;
-    
-    
+    const Name = req.params.Name;
+
+    let info = await db.getPositionByName(Name);
 
     if(getPositionByName(Name).length)
     {
-
+        res.send(info);
+    }
+    else
+    {
+        res.status(404).send({error: "查無此地點!!"})
     }
 }));
 
