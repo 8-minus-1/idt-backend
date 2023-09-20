@@ -125,14 +125,7 @@ router.get('/questions', validate(GetQuestionsSchema), wrap(async(req, res) => {
     const db = req.app.locals.db;
     const sp_type = req.query.sp_type;
     let results = await db.getQuestions(sp_type);
-    if(!results.length)
-    {
-        res.status(404).send({error: "尚無此類別的問題"});
-    }
-    else
-    {
-        res.send(results);
-    }
+    res.send(results);
 }));
 
 router.get('/questions/:q_id', validate(getQuestionByIdSchema), wrap(async (req, res)=>{
