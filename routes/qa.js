@@ -127,7 +127,7 @@ router.get('/questions', validate(GetQuestionsSchema), wrap(async(req, res) => {
     let results = await db.getQuestions(sp_type);
     if(!results.length)
     {
-        res.status(400).send({error: "尚無此類別的問題"});
+        res.status(404).send({error: "尚無此類別的問題"});
     }
     else
     {
