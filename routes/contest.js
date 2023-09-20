@@ -89,9 +89,12 @@ router.get('/contests/SelectType', wrap(async(req, res) => {
     const db = req.app.locals.db;
     const sp_type = req.query.sp_type;
     let results = await db.getSelectType(sp_type);
-    if(!results.length)
+    if(!sp_type){
+        res.status(400).send({error: "未輸入sp_type或格式錯誤"});
+    }
+    else if(!results.length)
     {
-         res.status(400).send({error: "無比賽"});
+         res.status(404).send({error: "查無此類型比賽"});
     }
     else
     {
