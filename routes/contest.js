@@ -3,27 +3,23 @@ const z = require('zod');
 const { validate, wrap } = require('../utils');
 const DB = require('../db');
 const auth = require('./auth');
-
 const AddContestSchema = z.object({
     body: z.object({
         Name: z.string(),
         Content: z.string(),
         Place: z.string(),
         Category: z.string(),
-        StartDate: z.string(),
-        EndDate: z.string(),
-        Deadline: z.string(),
+        StartDate: z.string().regex(new RegExp('^\\d{4}-\\d{2}-\\d{2}$')),
+        EndDate: z.string().regex(new RegExp('^\\d{4}-\\d{2}-\\d{2}$')),
+        Deadline: z.string().regex(new RegExp('^\\d{4}-\\d{2}-\\d{2}$')),
         Url: z.string(),
         Other: z.string()
-        // sp_type: z.number(),
-        // q_title: z.string().max(30).min(2),
-        // q_content: z.string().min(2),
     }),
 });
 
 const router = express.Router();
 
-router.post('/contests', auth.checkUserSession/**/, validate(AddContestSchema), wrap(async(req, res) => {
+router.post('/contests', auth.checkUserSession, validate(AddContestSchema), wrap(async(req, res) => {
      /**
       * @type {DB}
       */
