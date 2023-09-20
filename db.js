@@ -305,6 +305,16 @@ module.exports = class DB {
         );
         return results;
     }
+
+
+    async getSelectType(sp_type) {
+        let results = await this.db.query(
+            'SELECT * FROM Contest WHERE sp_type = ? ORDER by Deadline',
+            sp_type
+        );
+        return results;
+    }
+
     /* ----- End of functions for Contest ----- */
 
     /* -------- Map start form here -------- */

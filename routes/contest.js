@@ -80,4 +80,22 @@ router.get('/contests/ordered', wrap(async(req, res) => {
     }
 }));
 
+
+router.get('/contests/SelectType', wrap(async(req, res) => {
+    
+    /**
+      * @type {DB}
+      */
+    const db = req.app.locals.db;
+    const sp_type = req.query.sp_type;
+    let results = await db.getSelectType(sp_type);
+    if(!results.length)
+    {
+         res.status(400).send({error: "無比賽"});
+    }
+    else
+    {
+         res.send(results);
+    }
+}));
 module.exports = router;
