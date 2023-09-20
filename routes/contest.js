@@ -19,7 +19,7 @@ const AddContestSchema = z.object({
 
 const router = express.Router();
 
-router.post('/contests', auth.checkUserSession, validate(AddContestSchema), wrap(async(req, res) => {
+router.post('/contests'/**/, auth.checkUserSession, validate(AddContestSchema), wrap(async(req, res) => {
      /**
       * @type {DB}
       */
@@ -52,6 +52,24 @@ router.get('/contests', wrap(async(req, res) => {
     const db = req.app.locals.db;
     
     let results = await db.getContest();
+    if(!results.length)
+    {
+         res.status(400).send({error: "無比賽"});
+    }
+    else
+    {
+         res.send(results);
+    }
+}));
+
+router.get('/contests/ordered', wrap(async(req, res) => {
+    
+    /**
+      * @type {DB}
+      */
+    const db = req.app.locals.db;
+    
+    let results = await db.getOrderedContest();
     if(!results.length)
     {
          res.status(400).send({error: "無比賽"});

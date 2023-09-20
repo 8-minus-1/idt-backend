@@ -298,6 +298,13 @@ module.exports = class DB {
 
         return results;
     }
+
+    async getOrderedContest() {
+        let results = await this.db.query(
+            'SELECT * FROM Contest ORDER by Deadline'
+        );
+        return results;
+    }
     /* ----- End of functions for Contest ----- */
 
     /* -------- Map start form here -------- */
