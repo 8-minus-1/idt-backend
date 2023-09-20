@@ -284,10 +284,10 @@ module.exports = class DB {
     /* ----- End of functions for QA ----- */
 
     /* ----- Start of functions for Contest ----- */
-    async addContest(User_id, Name, Content, Place, Category, StartDate, EndDate, Deadline, Url, Other) {
+    async addContest(User_id, Name, Content, Place, sp_type, StartDate, EndDate, Deadline, Url, Other) {
         await this.db.query(
             'INSERT INTO Contest SET ?',
-            { User_id: User_id, Name: Name, Content: Content, Place: Place, Category: Category, StartDate: StartDate, EndDate: EndDate, Deadline: Deadline, Url: Url, Other: Other },
+            { User_id: User_id, Name: Name, Content: Content, Place: Place, sp_type: sp_type, StartDate: StartDate, EndDate: EndDate, Deadline: Deadline, Url: Url, Other: Other },
         );
     }
 
