@@ -20,11 +20,11 @@ const addPosition = z.object({
     }),
 });
 
-// const getPosition = z.object({
-//     params: z.object({
+const getPosition = z.object({
+    params: z.object({
        
-//     }),
-// });
+    }),
+});
 
 
 
@@ -65,19 +65,19 @@ router.post('/', auth.checkUserSession, validate(addPosition), wrap(async (req, 
     }
 }));
 
-// router.get('/', validate(getPosition), wrap(async (req, res) => {
-//     /**
-//      * @type {DB}
-//      */
-//     const db = req.app.locals.db;
+router.get('/', validate(getPosition), wrap(async (req, res) => {
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
     
     
 
-//     if(getPositionByName(Name).length)
-//     {
+    if(getPositionByName(Name).length)
+    {
 
-//     }
-// }));
+    }
+}));
 
 
 module.exports = router;
