@@ -120,6 +120,7 @@ async function main() {
     app.use('/api/qa', require('./routes/qa.js'));
     app.use('/api/cont', require('./routes/contest.js'));
     app.use('/api/map', require('./routes/map.js'));
+    app.use('/api/rules' ,require('./routes/rules'));
 
     app.use((err, req, res, next) => {
         req.error = err;

@@ -124,8 +124,16 @@ router.get('/questions', validate(GetQuestionsSchema), wrap(async(req, res) => {
      */
     const db = req.app.locals.db;
     const sp_type = req.query.sp_type;
-    let results = await db.getQuestions(sp_type);
-    res.send(results);
+    let sport = await db.getSportById(sp_type);
+    if(!sport.length)
+    {
+        res.status(404).send({error: "此運動類別不存在"})
+    }
+    else
+    {
+        let results = await db.getQuestions(sp_type);
+        res.send(results);
+    }
 }));
 
 router.get('/questions/:q_id', validate(getQuestionByIdSchema), wrap(async (req, res)=>{
@@ -203,7 +211,7 @@ router.put('/questions/:q_id', auth.checkUserSession, validate(EditQuestionSchem
     }
     else if(question[0].user_id !== user_id)
     {
-        res.status(401).send({error: "permission denied"});
+        res.status(403).send({error: "permission denied"});
     }
     else
     {
@@ -235,7 +243,7 @@ router.put('/answers/:a_id', auth.checkUserSession, validate(editAnswerSchema), 
     }
     else if(answer[0].user_id !== user_id)
     {
-        res.status(401).send({error: "permission denied"});
+        res.status(403).send({error: "permission denied"});
     }
     else
     {
@@ -263,7 +271,7 @@ router.delete('/questions/:q_id', auth.checkUserSession, validate(getQuestionByI
     }
     else if(question[0].user_id !== user_id)
     {
-        res.status(401).send({error: "permission denied"});
+        res.status(403).send({error: "permission denied"});
     }
     else
     {
@@ -288,7 +296,7 @@ router.delete('/answers/:a_id', auth.checkUserSession, validate(getAnswerByIdSch
     }
     else if(answer[0].user_id !== user_id)
     {
-        res.status(401).send({error: "permission denied"});
+        res.status(403).send({error: "permission denied"});
     }
     else
     {

@@ -333,6 +333,45 @@ module.exports = class DB {
         )
         return result;
     }
-
     /* -------- Map end here -------- */
+
+    // 查詢某 sp_type
+    async getSportById(sp_type)
+    {
+        let result = await this.db.query(
+            'SELECT * FROM `sports` WHERE sp_id = ?',
+            sp_type
+        )
+        return result;
+    }
+
+    /* ------ Start of functions for Rule ------ */
+    async newRule(user_id, sp_type, rules, fromVersion)
+    {
+        let latest = this.getLatestRule(sp_type);
+
+    }
+
+    async getLatestRule(sp_type)
+    {
+        let columns = ['sp_type', 'versionNum','approved', 'r_id'];
+        let results = await this.db.query(
+            'SELECT ?? FROM `rules` WHERE `sp_type` = ? ORDER BY `rules`.`versionNum` DESC',
+            [columns, sp_type]
+        )
+
+        for(var a = 0; a < results.length; ++a)
+        {
+            if(results[a].approved >= -10)
+            {
+                let latest = await this.db.query(
+                    'SELECT * FROM `rules` WHERE `r_id` = ?',
+                    results[a].r_id
+                )
+                return latest[0];
+            }
+        }
+        return null;
+    }
+    /* ------ End of functions for Rules ------ */
 }
