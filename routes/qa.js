@@ -57,6 +57,15 @@ const EditQuestionSchema = z.object({
     })
 })
 
+const editAnswerSchema = z.object({
+    params: z.object({
+        a_id: z.coerce.number()
+    }),
+    body: z.object({
+        a_content: z.string().min(10)
+    })
+})
+
 const router = express.Router();
 
 // 先檢查登入狀態，確認已登入後存資料
@@ -113,22 +122,12 @@ router.get('/questions', validate(GetQuestionsSchema), wrap(async (req, res) => 
      */
     const db = req.app.locals.db;
     const sp_type = req.query.sp_type;
-<<<<<<< HEAD
     let sport = await db.getSportById(sp_type);
-    if(!sport.length)
-    {
-        res.status(404).send({error: "此運動類別不存在"})
-    }
-    else
-    {
-        let results = await db.getQuestions(sp_type);
-=======
-    let results = await db.getQuestions(sp_type);
-    if (!results.length) {
-        res.status(400).send({ error: "尚無此類別的問題" });
+    if (!sport.length) {
+        res.status(404).send({ error: "此運動類別不存在" })
     }
     else {
->>>>>>> 7985dbf (MAP更改API位置)
+        let results = await db.getQuestions(sp_type);
         res.send(results);
     }
 }));
@@ -185,7 +184,7 @@ router.get('/answers/:a_id', validate(getAnswerByIdSchema), wrap(async (req, res
 }));
 
 // Edit Question
-router.put('/question/:q_id', auth.checkUserSession, validate(EditQuestionSchema), wrap(async (req, res) => {
+router.put('/questions/:q_id', auth.checkUserSession, validate(EditQuestionSchema), wrap(async (req, res) => {
     /**
      * @type {DB}
      */
@@ -199,14 +198,8 @@ router.put('/question/:q_id', auth.checkUserSession, validate(EditQuestionSchema
     if (!question.length) {
         res.status(404).send({ error: "Question Not Found!" });
     }
-<<<<<<< HEAD
-    else if(question[0].user_id !== user_id)
-    {
-        res.status(403).send({error: "permission denied"});
-=======
     else if (question[0].user_id !== user_id) {
-        res.status(401).send({ error: "permission denied" });
->>>>>>> 7985dbf (MAP更改API位置)
+        res.status(403).send({ error: "permission denied" });
     }
     else {
         await db.editQuestion(q_id, sp_type, q_title, q_content);
@@ -220,8 +213,7 @@ router.put('/question/:q_id', auth.checkUserSession, validate(EditQuestionSchema
     }
 }));
 
-<<<<<<< HEAD
-router.put('/answers/:a_id', auth.checkUserSession, validate(editAnswerSchema), wrap(async (req, res)=>{
+router.put('/answers/:a_id', auth.checkUserSession, validate(editAnswerSchema), wrap(async (req, res) => {
     /**
      * @type {DB}
      */
@@ -232,16 +224,13 @@ router.put('/answers/:a_id', auth.checkUserSession, validate(editAnswerSchema), 
 
     let answer = await db.getAnswerById(a_id);
 
-    if(!answer.length)
-    {
-        res.status(404).send({error: "Answer Not Found!"});
+    if (!answer.length) {
+        res.status(404).send({ error: "Answer Not Found!" });
     }
-    else if(answer[0].user_id !== user_id)
-    {
-        res.status(403).send({error: "permission denied"});
+    else if (answer[0].user_id !== user_id) {
+        res.status(403).send({ error: "permission denied" });
     }
-    else
-    {
+    else {
         await db.editAnswer(a_id, a_content);
         res.send({
             status: "OK",
@@ -250,10 +239,7 @@ router.put('/answers/:a_id', auth.checkUserSession, validate(editAnswerSchema), 
     }
 }))
 
-router.delete('/questions/:q_id', auth.checkUserSession, validate(getQuestionByIdSchema), wrap(async (req, res)=>{
-=======
 router.delete('/questions/:q_id', auth.checkUserSession, validate(getQuestionByIdSchema), wrap(async (req, res) => {
->>>>>>> 7985dbf (MAP更改API位置)
     /**
      * @type {DB}
      * */
@@ -266,14 +252,8 @@ router.delete('/questions/:q_id', auth.checkUserSession, validate(getQuestionByI
     if (!question.length) {
         res.status(404).send({ error: "Question Not Found!" });
     }
-<<<<<<< HEAD
-    else if(question[0].user_id !== user_id)
-    {
-        res.status(403).send({error: "permission denied"});
-=======
     else if (question[0].user_id !== user_id) {
-        res.status(401).send({ error: "permission denied" });
->>>>>>> 7985dbf (MAP更改API位置)
+        res.status(403).send({ error: "permission denied" });
     }
     else {
         await db.deleteQuestionById(q_id);
@@ -294,14 +274,8 @@ router.delete('/answers/:a_id', auth.checkUserSession, validate(getAnswerByIdSch
     if (!answer.length) {
         res.status(404).send({ error: "Answer Not Found!" });
     }
-<<<<<<< HEAD
-    else if(answer[0].user_id !== user_id)
-    {
-        res.status(403).send({error: "permission denied"});
-=======
     else if (answer[0].user_id !== user_id) {
-        res.status(401).send({ error: "permission denied" });
->>>>>>> 7985dbf (MAP更改API位置)
+        res.status(403).send({ error: "permission denied" });
     }
     else {
         await db.deleteAnswerById(a_id);
