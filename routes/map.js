@@ -20,21 +20,22 @@ const addPosition = z.object({
     }),
 });
 
-const addRank = z.object({
-    
+const addPositionRank = z.object({
+    body: z.object({
+        Name: z.string(),
+        Rank: z.number(),
+    }),
 });
 
 const getPosition = z.object({
-    query: z.object({
+    body: z.object({
         Name: z.string()
     }),
 });
 
-
-
 const router = express.Router();
 
-router.post('/', auth.checkUserSession, validate(addPosition), wrap(async (req, res) => {
+router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(async (req, res) => {
     /**
      * @type {DB}
      */
@@ -48,8 +49,7 @@ router.post('/', auth.checkUserSession, validate(addPosition), wrap(async (req, 
     const Renew = req.body.Date;
     const User = req.session.user.id;
 
-    if(!getPositionByName(Name))
-    {
+    if(!getPositionByName(Name)){
         await db.addMap(Name, Latitude, Longitude, Address, Url, Phone, Renew, User);
         res.send({
             status: "OK",
@@ -63,13 +63,12 @@ router.post('/', auth.checkUserSession, validate(addPosition), wrap(async (req, 
             User: User
         });
     }
-    else
-    {
+    else{
         res.status(501).send({error: "已存在相同地點!!"})
     }
 }));
 
-router.get('/', validate(getPosition), wrap(async (req, res) => {
+router.get('/getInfo', validate(getPosition), wrap(async (req, res) => {
     /**
      * @type {DB}
      */
@@ -78,15 +77,40 @@ router.get('/', validate(getPosition), wrap(async (req, res) => {
 
     let info = await db.getPositionByName(Name);
     let len = info.length;
-    if(len)
-    {
+    if(len){
         res.send(info);
     }
-    else
-    {
+    else{
         res.status(404).send({error: "查無此地點!!"})
     }
 }));
 
+router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(async (req, res) =>{
+    /**
+     * @type{DB}
+     */
+    const db = req.app.locals.db;
+    const User = req.session.user;
+    const Name = req.body.Name;
+    const json = await db.getPositionByName(Name);
+    const ID = json[0]["ID"];
+
+    let Rank = await db.getUserRankPos(User, ID);
+    //console.log(Rank);
+
+    if(Rank > 0){
+        res.status(501).send({
+            error: "已評價過該地點!!"
+        });
+    }
+    else{
+        Rank = req.body.Rank;
+        res.send({
+            ID: ID,
+            Rank: Rank,
+            User: User
+        });
+    }
+}));
 
 module.exports = router;

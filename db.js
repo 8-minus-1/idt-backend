@@ -341,13 +341,28 @@ module.exports = class DB {
     }
 
     async getPositionByName(Name) {
-        console.log(Name);
         let result = await this.db.query(
             'SELECT * FROM Map WHERE Name = ?',
             Name,
         )
         return result;
     }
+<<<<<<< HEAD
+=======
+
+    async getUserRankPos(User, ID){
+        let result = await this.db.query(
+            'SELECT rank FROM rank WHERE user = ? AND ID = ?',
+            User, ID,
+        )
+        if(result != 0){
+            return result;
+        }        
+        else{
+            return -1;
+        }    
+    }
+>>>>>>> 7985dbf (MAP更改API位置)
     /* -------- Map end here -------- */
 
     // 查詢某 sp_type
