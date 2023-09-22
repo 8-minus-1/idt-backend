@@ -314,7 +314,22 @@ module.exports = class DB {
         );
         return results;
     }
+    
+    async editContest(c_id, Name, Content, Place, sp_type, StartDate, EndDate, Deadline, Url, Other) {
+        await this.db.query(
+            'UPDATE Contest SET ? WHERE c_id = ?',
+            [{ Name:Name, Content:Content, Place:Place, sp_type:sp_type, StartDate:StartDate, EndDate:EndDate, Deadline:Deadline, Url:Url, Other:Other }, c_id]
+        )
+    }
 
+    async getContestById(c_id) {
+        let results = await this.db.query(
+            'SELECT * FROM Contest WHERE c_id = ?',
+            c_id,
+        )
+
+        return results;
+    }
     /* ----- End of functions for Contest ----- */
 
     /* -------- Map start form here -------- */

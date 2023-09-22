@@ -101,4 +101,64 @@ router.get('/contests/SelectType', wrap(async(req, res) => {
          res.send(results);
     }
 }));
+
+router.put('/contests/modify', auth.checkUserSession, validate(AddContestSchema),wrap(async(req, res) => {
+    
+    /**
+      * @type {DB}
+      */
+    const db = req.app.locals.db;
+    const User_id = req.session.user.id;
+    //const User_id = "Test";
+    const Name = req.body.Name;
+    const Content = req.body.Content;
+    const Place = req.body.Place;
+    const sp_type = req.body.sp_type;
+    const StartDate = req.body.StartDate;
+    const EndDate = req.body.EndDate;
+    const Deadline = req.body.Deadline;
+    const Url = req.body.Url;
+    const Other = req.body.Other;
+    const c_id = req.query.c_id;
+    
+    let contents = await db.getContestById(c_id);
+
+    if(!contents.length)
+    {
+        res.status(404).send({error: "查無比賽"});
+    }
+    else if(contents[0].User_id !== User_id)
+    {
+        res.status(401).send({error: "permission denied"});
+    }
+    else
+    {
+        await db.editContest(c_id, Name, Content, Place, sp_type, StartDate, EndDate, Deadline, Url, Other);
+        res.send({
+            status: "Success!!",
+            user: User_id,
+        });
+    }
+}));
+
+router.get('/contests/:c_id', wrap(async(req, res) => {
+    
+    /**
+      * @type {DB}
+      */
+    const db = req.app.locals.db;
+    const c_id = req.params.c_id;
+    let contents = await db.getContestById(c_id);
+    if(!c_id){
+        res.status(400).send({error: "未輸入c_id或格式錯誤"});
+    }
+    if(!contents.length)
+    {
+        res.status(404).send({error: "Content Not Found!"});
+    }
+    else
+    {
+        res.send(contents);
+    }
+}));
 module.exports = router;
