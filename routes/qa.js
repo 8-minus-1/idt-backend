@@ -122,8 +122,8 @@ router.get('/questions', validate(GetQuestionsSchema), wrap(async (req, res) => 
      */
     const db = req.app.locals.db;
     const sp_type = req.query.sp_type;
-    let sport = await db.getSportById(sp_type);
-    if (!sport.length) {
+    let sport = (sp_type)? await db.getSportById(sp_type) : [];
+    if (sp_type && !sport.length) {
         res.status(404).send({ error: "此運動類別不存在" })
     }
     else {
