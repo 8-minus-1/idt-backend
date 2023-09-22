@@ -274,8 +274,7 @@ module.exports = class DB {
         )
     }
 
-    async deleteAnswerById(a_id)
-    {
+    async deleteAnswerById(a_id) {
         await this.db.query(
             'DELETE FROM `QA_answer` WHERE `a_id` = ?',
             a_id
@@ -314,11 +313,11 @@ module.exports = class DB {
         );
         return results;
     }
-    
+
     async editContest(c_id, Name, Content, Place, sp_type, StartDate, EndDate, Deadline, Url, Other) {
         await this.db.query(
             'UPDATE Contest SET ? WHERE c_id = ?',
-            [{ Name:Name, Content:Content, Place:Place, sp_type:sp_type, StartDate:StartDate, EndDate:EndDate, Deadline:Deadline, Url:Url, Other:Other }, c_id]
+            [{ Name: Name, Content: Content, Place: Place, sp_type: sp_type, StartDate: StartDate, EndDate: EndDate, Deadline: Deadline, Url: Url, Other: Other }, c_id]
         )
     }
 
@@ -347,11 +346,22 @@ module.exports = class DB {
         )
         return result;
     }
+    async getUserRankPos(User, ID) {
+        let result = await this.db.query(
+            'SELECT rank FROM rank WHERE user = ? AND ID = ?',
+            User, ID,
+        )
+        if (result != 0) {
+            return result;
+        }
+        else {
+            return -1;
+        }
+    }
     /* -------- Map end here -------- */
 
     // 查詢某 sp_type
-    async getSportById(sp_type)
-    {
+    async getSportById(sp_type) {
         let result = await this.db.query(
             'SELECT * FROM `sports` WHERE sp_id = ?',
             sp_type
@@ -360,56 +370,47 @@ module.exports = class DB {
     }
 
     /* ------ Start of functions for Rule ------ */
-    async newRule(user_id, sp_type, rules, fromVersion)
-    {
+    async newRule(user_id, sp_type, rules, fromVersion) {
         let latest = await this.getLatestRule(sp_type);
 
-        if(!latest)
-        {
+        if (!latest) {
             // if no existing records found, this will be definitely the latest
             await this.db.query(
                 'INSERT INTO `rules` SET ?',
-                {user_id: user_id, sp_type: sp_type, rules: rules, fromVersion: 0, versionNum: 1, timestamp: Date.now()}
+                { user_id: user_id, sp_type: sp_type, rules: rules, fromVersion: 0, versionNum: 1, timestamp: Date.now() }
             )
             return 0;
         }
-        else
-        {
+        else {
             // found existing rules
-            if(latest.versionNum !== fromVersion)
-            {
+            if (latest.versionNum !== fromVersion) {
                 // this edit is not from the latest version
                 return 1;
             }
-            else if(latest.rules === rules)
-            {
+            else if (latest.rules === rules) {
                 // new edit is identical with the latest version
 
                 return 2;
             }
-            else
-            {
+            else {
                 await this.db.query(
                     'INSERT INTO `rules` SET ?',
-                    {user_id: user_id, sp_type: sp_type, rules: rules, fromVersion: fromVersion, versionNum: fromVersion + 1, timestamp: Date.now()}
+                    { user_id: user_id, sp_type: sp_type, rules: rules, fromVersion: fromVersion, versionNum: fromVersion + 1, timestamp: Date.now() }
                 )
                 return 0;
             }
         }
     }
 
-    async getLatestRule(sp_type)
-    {
-        let columns = ['sp_type', 'versionNum','approved', 'r_id'];
+    async getLatestRule(sp_type) {
+        let columns = ['sp_type', 'versionNum', 'approved', 'r_id'];
         let results = await this.db.query(
             'SELECT ?? FROM `rules` WHERE `sp_type` = ? ORDER BY `rules`.`versionNum` DESC',
             [columns, sp_type]
         )
 
-        for(var a = 0; a < results.length; ++a)
-        {
-            if(results[a].approved >= -15)
-            {
+        for (var a = 0; a < results.length; ++a) {
+            if (results[a].approved >= -15) {
                 let latest = await this.db.query(
                     'SELECT * FROM `rules` WHERE `r_id` = ?',
                     results[a].r_id
