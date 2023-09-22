@@ -378,8 +378,40 @@ module.exports = class DB {
     /* ------ Start of functions for Rule ------ */
     async newRule(user_id, sp_type, rules, fromVersion)
     {
-        let latest = this.getLatestRule(sp_type);
+        let latest = await this.getLatestRule(sp_type);
 
+        if(!latest)
+        {
+            // if no existing records found, this will be definitely the latest
+            await this.db.query(
+                'INSERT INTO `rules` SET ?',
+                {user_id: user_id, sp_type: sp_type, rules: rules, fromVersion: 0, versionNum: 1, timestamp: Date.now()}
+            )
+            return 0;
+        }
+        else
+        {
+            // found existing rules
+            if(latest.versionNum !== fromVersion)
+            {
+                // this edit is not from the latest version
+                return 1;
+            }
+            else if(latest.rules === rules)
+            {
+                // new edit is identical with the latest version
+
+                return 2;
+            }
+            else
+            {
+                await this.db.query(
+                    'INSERT INTO `rules` SET ?',
+                    {user_id: user_id, sp_type: sp_type, rules: rules, fromVersion: fromVersion, versionNum: fromVersion + 1, timestamp: Date.now()}
+                )
+                return 0;
+            }
+        }
     }
 
     async getLatestRule(sp_type)
@@ -392,7 +424,7 @@ module.exports = class DB {
 
         for(var a = 0; a < results.length; ++a)
         {
-            if(results[a].approved >= -10)
+            if(results[a].approved >= -15)
             {
                 let latest = await this.db.query(
                     'SELECT * FROM `rules` WHERE `r_id` = ?',

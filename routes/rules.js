@@ -13,6 +13,7 @@ const postRuleSchema = z.object({
         sp_type: z.coerce.number()
     }),
     body: z.object({
+        fromVersion: z.number(),
         rules: z.string(),
     })
 })
@@ -23,7 +24,7 @@ const getRuleSchema = z.object({
     })
 })
 
-router.post('/sports/:sp_type', auth.checkUserSession, validate(postRuleSchema), wrap(async (req, res)=>{
+router.put('/sports/:sp_type', auth.checkUserSession, validate(postRuleSchema), wrap(async (req, res)=>{
     /**
      * @type {DB};
      */
@@ -31,6 +32,7 @@ router.post('/sports/:sp_type', auth.checkUserSession, validate(postRuleSchema),
     const user_id = req.session.user.id;
     const sp_type = req.params.sp_type;
     const rules = req.body.rules;
+    const fromVersion = req.body.fromVersion;
 
     let sport = await db.getSportById(sp_type);
     if(!sport.length)
@@ -39,7 +41,19 @@ router.post('/sports/:sp_type', auth.checkUserSession, validate(postRuleSchema),
     }
     else
     {
-
+        let code = await db.newRule(user_id, sp_type, rules, fromVersion);
+        if(code === 1 /* this edit is not from latest */)
+        {
+            res.status(409 /* conflict */).send({error: "This edit is not from the latest version"});
+        }
+        else if(code === 2 /* this edit is identical with latest */)
+        {
+            res.status(409 /* conflict */).send({error: "This edit is identical with the latest version"})
+        }
+        else
+        {
+            res.send({status: "OK"});
+        }
     }
 }));
 
@@ -60,15 +74,16 @@ router.get('/sports/:sp_type/latest', validate(getRuleSchema), wrap( async(req, 
         let latest = await db.getLatestRule(sp_type);
         if(!latest)
         {
-            res.status(404).send({message: "此運動目前沒有規則紀錄"});
+            res.send({
+                versionNum: 0,
+                rules: null,
+            });
         }
         else
         {
             res.send(latest);
         }
     }
-
-
 }))
 
 
