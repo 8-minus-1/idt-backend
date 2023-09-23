@@ -94,9 +94,9 @@ router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(a
     const Name = req.body.Name;
     const json = await db.getPositionByName(Name);
     const ID = json[0]["ID"];
-
+    
     let Rank = await db.getUserRankPos(User, ID);
-    //console.log(Rank);
+    console.log(Rank);
 
     if(Rank > 0){
         res.status(501).send({
