@@ -48,8 +48,8 @@ router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(a
     const Phone = req.body.Phone;
     const Renew = req.body.Date;
     const User = req.session.user.id;
-
-    if (!getPositionByName(Name)) {
+    const length = db.getPositionByName(Name).length;
+    if (!length) {
         await db.addMap(Name, Latitude, Longitude, Address, Url, Phone, Renew, User);
         res.send({
             status: "OK",
@@ -97,10 +97,13 @@ router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(a
 
     let Rank = await db.getUserRankPos(User, ID);
 
-
     if (Rank > 0) {
-        res.status(501).send({
-            error: "已評價過該地點!!"
+        Rank = req.body.Rank;
+        await db.changePositionRank(ID, Rank, User);
+        res.send({
+            ID: ID,
+            Rank: Rank,
+            User: User
         });
     }
     else {
