@@ -356,8 +356,18 @@ module.exports = class DB {
             [{ Name : Name, Latitude : Latitude, Longitude : Longitude, Address : Address, Url : Url,Phone : Phone, Renew : Date.now(), User : User }, ID]
         )
     }
-    
-
+    async addPositionRank(ID, Rank, User){
+        await this.db.query(
+            'INSERT INTO rank SET ?',
+            { ID, Rank, User }
+        );
+    }
+    async changePositionRank(ID, Rank, User){
+        await this.db.query(
+            'UPDATE rank SET Rank= ? WHERE ID = ? AND User = ?',
+            { Rank }, ID, User,
+        );
+    }
     /* -------- Map end here -------- */
 
     // 查詢某 sp_type
@@ -397,6 +407,75 @@ module.exports = class DB {
             }
         }
         return null;
+    }
+
+    async getUserApprovalStatus(user_id, r_id)
+    {
+        let results = await this.db.query(
+            'SELECT * FROM `rules_approval_user` WHERE r_id = ? AND user_id = ?',
+            [r_id, user_id]
+        )
+        return results;
+    }
+
+    async getRuleApprovalCountById(r_id)
+    {
+        let results = await this.db.query(
+            'SELECT approved, r_id from rules where r_id = ?',
+            r_id
+        );
+        return results;
+    }
+
+    /**
+     * @param {number} user_id
+     * @param {number} approval
+     * @param {number} r_id
+     */
+    async approveRuleById(user_id, approval, r_id)
+    {
+        let results = await this.getRuleApprovalCountById(r_id);
+
+        let user_approved = await this.getUserApprovalStatus(user_id, r_id);
+
+        if(!results.length /* r_id not found */)
+        {
+            return -1;
+        }
+        else if(user_approved.length /* User already approved or disapproved */)
+        {
+            if(user_approved[0].approval === approval /* same approval */)
+            {
+                return 1;
+            }
+            else /* Change approval */
+            {
+                await this.db.query(
+                    'UPDATE `rules_approval_user` SET approval = ? WHERE r_id = ? AND user_id = ?',
+                    [approval, r_id, user_id]
+                );
+
+                let approved = results[0].approved;
+                await this.db.query(
+                    'UPDATE `rules` SET ? WHERE r_id = ?',
+                    [{approved: approved + 2 * approval}, r_id]
+                );
+            }
+        }
+        else /* User hasn't approve */
+        {
+            await this.db.query(
+                'INSERT INTO `rules_approval_user` SET ?',
+                {user_id, r_id, approval, timestamp: Date.now()}
+            );
+
+            let approved = results[0].approved;
+            await this.db.query(
+                'UPDATE `rules` SET ? WHERE r_id = ?',
+                [{approved: approved + approval}, r_id]
+            );
+        }
+        return 0;
     }
     /* ------ End of functions for Rules ------ */
 }
