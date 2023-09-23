@@ -161,4 +161,30 @@ router.get('/contests/:c_id', wrap(async(req, res) => {
         res.send(contents);
     }
 }));
+
+router.delete('/contests/:c_id', auth.checkUserSession, validate(AddContestSchema), wrap(async (req, res)=>{
+    /**
+     * @type {DB}
+     * */
+    const db = req.app.locals.db;
+    const User_id = req.session.user.id;
+    const c_id = req.params.c_id;
+
+    let contents = await db.getContestById(c_id);
+
+    if(!contents.length)
+    {
+        res.status(404).send({error: "Content Not Found!"});
+    }
+    else if(contents[0].User_id !== User_id)
+    {
+        console.log(contents[0].User_id, User_id);
+        res.status(401).send({error: "permission denied"});
+    }
+    else
+    {
+        await db.deleteContent(c_id);
+        res.send({message: "Success", deleted: contents[0]});
+    }
+}));
 module.exports = router;
