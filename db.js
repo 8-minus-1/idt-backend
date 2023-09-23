@@ -418,6 +418,8 @@ module.exports = class DB {
         return results;
     }
 
+    //TODO: get所有Version
+
     async getRuleApprovalCountById(r_id)
     {
         let results = await this.db.query(
