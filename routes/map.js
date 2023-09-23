@@ -49,7 +49,7 @@ router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(a
     const Renew = req.body.Date;
     const User = req.session.user.id;
 
-    if(!getPositionByName(Name)){
+    if (!getPositionByName(Name)) {
         await db.addMap(Name, Latitude, Longitude, Address, Url, Phone, Renew, User);
         res.send({
             status: "OK",
@@ -63,8 +63,8 @@ router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(a
             User: User
         });
     }
-    else{
-        res.status(501).send({error: "已存在相同地點!!"})
+    else {
+        res.status(501).send({ error: "已存在相同地點!!" })
     }
 }));
 
@@ -77,34 +77,35 @@ router.get('/getInfo', validate(getPosition), wrap(async (req, res) => {
 
     let info = await db.getPositionByName(Name);
     let len = info.length;
-    if(len){
+    if (len) {
         res.send(info);
     }
-    else{
-        res.status(404).send({error: "查無此地點!!"})
+    else {
+        res.status(404).send({ error: "查無此地點!!" })
     }
 }));
 
-router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(async (req, res) =>{
+router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(async (req, res) => {
     /**
      * @type{DB}
      */
     const db = req.app.locals.db;
-    const User = req.session.user;
+    const User = req.session.user.id;
     const Name = req.body.Name;
     const json = await db.getPositionByName(Name);
     const ID = json[0]["ID"];
-    
-    let Rank = await db.getUserRankPos(User, ID);
-    console.log(Rank);
 
-    if(Rank > 0){
+    let Rank = await db.getUserRankPos(User, ID);
+
+
+    if (Rank > 0) {
         res.status(501).send({
             error: "已評價過該地點!!"
         });
     }
-    else{
+    else {
         Rank = req.body.Rank;
+        await db.addPositionRank(ID, Rank, User);
         res.send({
             ID: ID,
             Rank: Rank,

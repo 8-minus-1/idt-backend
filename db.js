@@ -348,8 +348,8 @@ module.exports = class DB {
     }
     async getUserRankPos(User, ID) {
         let result = await this.db.query(
-            'SELECT rank FROM rank WHERE user = ? AND ID = ?',
-            User, ID,
+            'SELECT rank, user, ID FROM rank WHERE user = ? AND ID = ?',
+            [User, ID]
         )
         if (result != 0) {
             return result;
@@ -357,6 +357,12 @@ module.exports = class DB {
         else {
             return -1;
         }
+    }
+    async addPositionRank(ID, Rank, User){
+        await this.db.query(
+            'INSERT INTO rank SET ?',
+            { ID, Rank, User }
+        );
     }
     /* -------- Map end here -------- */
 
