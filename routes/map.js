@@ -49,7 +49,7 @@ router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(a
     const Renew = req.body.Date;
     const User = req.session.user.id;
 
-    if(!getPositionByName(Name)){
+    if(!db.getPositionByName(Name)){
         await db.addMap(Name, Latitude, Longitude, Address, Url, Phone, Renew, User);
         res.send({
             status: "OK",
@@ -112,5 +112,39 @@ router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(a
         });
     }
 }));
+
+// edit Map info
+router.put('/emi',auth.checkUserSession,validate(addPosition),wrap(async(req,res) => {
+    /**
+     * @type {DB}
+     */
+
+    const db = req.app.locals.db;
+    const Name = req.body.Name;
+    const Latitude = req.body.Latitude;
+    const Longitude = req.body.Longitude;
+    const Address = req.body.Address;
+    const Url = req.body.Address;
+    const Phone = req.body.Phone;
+    //const Renew = req.body.Date;
+    const User = req.session.user.id;
+    
+    let mapobj = await db.getPositionByName(Name);
+    if(!mapobj.length) {
+        res.status(404).send({error:"Unsuccessful enquiry"});
+    }
+    else if(mapobj[0].User !== User){
+        res.status(403).send({error:"permission denied"});
+    }
+    else{
+        await db.editMapInfo(Name, Latitude, Longitude, Address,Url, Phone, User);
+        res.send({
+            status : "Done",
+            ID : ID,
+            Name : Name,
+            User : User
+        });
+    }
+}))
 
 module.exports = router;
