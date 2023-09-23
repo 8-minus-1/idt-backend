@@ -8,6 +8,7 @@
         "dbname": "db"
     },
     "email": {
+        "fromName": "○○平台",
         "fromAddress": "service@idttttttt.com",
         "verificationUrlTemplate": "https://idttttttt.com/auth/email/{email}/{token}?flow={flow}",
         "registrationSubject": "[○○平台] 帳號註冊驗證信",
