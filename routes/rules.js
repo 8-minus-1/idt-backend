@@ -24,6 +24,12 @@ const getRuleSchema = z.object({
     })
 })
 
+const approveSchema = z.object({
+    params: z.object({
+        r_id: z.coerce.number()
+    })
+});
+
 router.put('/sports/:sp_type', auth.checkUserSession, validate(postRuleSchema), wrap(async (req, res)=>{
     /**
      * @type {DB};
@@ -84,8 +90,53 @@ router.get('/sports/:sp_type/latest', validate(getRuleSchema), wrap( async(req, 
             res.send(latest);
         }
     }
-}))
+}));
+
+router.post('/approve/:r_id', auth.checkUserSession, validate(approveSchema), wrap( async (req, res) =>{
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const user_id = req.session.user.id;
+    const r_id = req.params.r_id;
+    let code = await db.approveRuleById(user_id, 1, r_id);
+
+    if(code === -1)
+    {
+        res.status(404).send({error: "No corresponding rule record found"});
+    }
+    else if(code === 1)
+    {
+        res.status(409 /* Conflict */).send({error: "User Already has same approval record"});
+    }
+    else
+    {
+        res.send({status: "OK"});
+    }
+}));
 
 
+router.post('/disapprove/:r_id', auth.checkUserSession, validate(approveSchema), wrap( async (req, res) =>{
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const user_id = req.session.user.id;
+    const r_id = req.params.r_id;
+    let code = await db.approveRuleById(user_id, -1, r_id);
+
+    if(code === -1)
+    {
+        res.status(404).send({error: "No corresponding rule record found"});
+    }
+    else if(code === 1)
+    {
+        res.status(409 /* Conflict */).send({error: "User Already has same approval record"});
+    }
+    else
+    {
+        res.send({status: "OK"});
+    }
+}));
 
 module.exports = router;
