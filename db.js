@@ -350,12 +350,13 @@ module.exports = class DB {
     }
 
     /**/
-    async editMapInfo(ID, Name, Latitude, Longitude, Address,Url, Phone,User) {
+    async editMapInfo(ID, Name, Latitude, Longitude, Address,Url, Phone, User) {
         await this.db.query(
             'UPDATE Map SET ? WHERE ID = ?',
             [{ Name : Name, Latitude : Latitude, Longitude : Longitude, Address : Address, Url : Url,Phone : Phone, Renew : Date.now(), User : User }, ID]
         )
     }
+    
     async addPositionRank(ID, Rank, User){
         await this.db.query(
             'INSERT INTO rank SET ?',
