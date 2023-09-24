@@ -330,6 +330,14 @@ module.exports = class DB {
 
         return results;
     }
+
+    async deleteContent(c_id)
+    {
+        await this.db.query(
+            'DELETE FROM `Contest` WHERE `c_id` = ?',
+            c_id
+        )
+    }
     /* ----- End of functions for Contest ----- */
 
     /* -------- Map start form here -------- */
@@ -418,6 +426,8 @@ module.exports = class DB {
         )
         return results;
     }
+
+    //TODO: get所有Version
 
     async getRuleApprovalCountById(r_id)
     {

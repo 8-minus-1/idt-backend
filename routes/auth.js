@@ -84,11 +84,11 @@ router.post('/locateAccount', validate(LocateAccountRequest), wrap(async (req, r
 
 async function sendVerificationEmail(isDev, config, toAddress, token, isResetPassword) {
     let basicEmailConfigSetUp = !!config.email;
-    let smtpSetUp = basicEmailConfigSetUp && !!config.email.smtp;
+    let emailApiSetUp = basicEmailConfigSetUp && !!config.email.api;
     let testingReceiverSetUp = !!config.verificationTestingReceiverCredentials?.telegramChatId;
-    let shouldUseSmtp = !isDev && smtpSetUp;
+    let shouldUseApi = !isDev && emailApiSetUp;
     let shouldUseTestingReceiver = isDev && testingReceiverSetUp;
-    if (!basicEmailConfigSetUp || (!shouldUseSmtp && !shouldUseTestingReceiver)) {
+    if (!basicEmailConfigSetUp || (!shouldUseApi && !shouldUseTestingReceiver)) {
         console.log('Skipping sending email');
         return;
     }
@@ -101,15 +101,29 @@ async function sendVerificationEmail(isDev, config, toAddress, token, isResetPas
         .replaceAll('{flow}', encodeURIComponent(flow));
     let subject = isResetPassword ? config.email.resetPasswordSubject : config.email.registrationSubject;
     let content = template.replaceAll('{url}', targetUrl);
-    if (shouldUseSmtp) {
-        throw new Error('SMTP not implemented');
+    let got = (await Got).default;
+    if (shouldUseApi) {
+        await got.post(config.email.api.url, {
+            headers: {
+                authorization: 'Bearer ' + config.email.api.token,
+            },
+            json: {
+                fromAddress: config.email.fromAddress,
+                fromName: config.email.fromName,
+                toAddress: toAddress,
+                subject: subject,
+                content: [{
+                    type: 'text/plain',
+                    value: content,
+                }],
+            },
+        });
     } else if (shouldUseTestingReceiver) {
         let message = `From: ${config.email.fromAddress}
 To: ${toAddress}
 Subject: ${subject}
 
 ${content.replaceAll('http', 'hxxp')}`;
-        let got = (await Got).default;
         let { telegramBotToken, telegramChatId } = config.verificationTestingReceiverCredentials;
 
         await got.post('https://api.telegram.org/bot' + telegramBotToken + '/sendMessage', {

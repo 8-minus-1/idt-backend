@@ -23,12 +23,11 @@ const Config = z.object({
         dbname: z.string(),
     }),
     email: z.object({
-        smtp: z.object({
-            host: z.string(),
-            port: z.number(),
-            user: z.string(),
-            password: z.string(),
+        api: z.object({
+            url: z.string().url(),
+            token: z.string(),
         }).optional(),
+        fromName: z.string(),
         fromAddress: z.string().email(),
         verificationUrlTemplate: z.string()
             .refine((str) => ['email', 'token', 'flow']
