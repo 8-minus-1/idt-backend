@@ -380,12 +380,20 @@ module.exports = class DB {
             { ID, Rank, User }
         );
     }
-    
+
     async changePositionRank(ID, Rank, User) {
         await this.db.query(
             'UPDATE rank SET Rank= ? WHERE ID = ? AND User = ?',
             [ Rank, ID, User ]
         );
+    }
+
+    async numberOfRank(ID){
+        let result = await this.db.query(
+            'SELECT COUNT( ? ) FROM rank',
+            ID
+        );
+        return result;
     }
     /* -------- Map end here -------- */
 

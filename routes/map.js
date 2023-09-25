@@ -31,7 +31,11 @@ const getPosition = z.object({
     }),
 });
 
-
+const numOfRank = z.object({
+    body: z.object({
+        Name: z.string()
+    })
+});
 
 const router = express.Router();
 
@@ -119,7 +123,6 @@ router.put('/editRank', auth.checkUserSession, validate(addPositionRank), wrap(a
     const Rank = req.body.Rank;
     const json = await db.getPositionByName(Name);
     const ID = json[0].ID;
-    console.log(Rank);
 
     await db.changePositionRank(ID, Rank, User);
     res.send({
@@ -163,5 +166,23 @@ router.put('/emi',auth.checkUserSession,validate(addPosition),wrap(async(req,res
         });
     }
 }))
+
+router.get('/numOfRank', validate(numOfRank), wrap(async (req, res) => {
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const Name = req.body.Name;
+
+    let json = await db.getPositionByName(Name);
+    let ID = json[0].ID;
+    
+    let data = await db.numberOfRank(ID);
+    const count = Object.values(data[0]);
+    const value = count[0]
+    res.send({
+        "count": value
+        });
+}));
 
 module.exports = router;
