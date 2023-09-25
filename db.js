@@ -361,10 +361,16 @@ module.exports = class DB {
     }
 
     /**/
-    async editMapInfo(ID, Name, Latitude, Longitude, Address, Url, Phone, User) {
+    async editMapInfo(ID, Name, Latitude, Longitude, Address, Url, Phone) {
+        var date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, 0);
+        const day = String(date.getDate()).padStart(2, 0);
+        var Renew = `${year}-${month}-${day}`;
+
         await this.db.query(
             'UPDATE Map SET ? WHERE ID = ?',
-            [{ Name: Name, Latitude: Latitude, Longitude: Longitude, Address: Address, Url: Url, Phone: Phone, Renew: Date.now(), User: User }, ID]
+            [{ Name: Name, Latitude: Latitude, Longitude: Longitude, Address: Address, Url: Url, Phone: Phone, Renew: Renew}, ID]
         )
     }
 

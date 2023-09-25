@@ -138,8 +138,7 @@ router.put('/emi',auth.checkUserSession,validate(addPosition),wrap(async(req,res
     //const Renew = req.body.Date;
     const User = req.session.user.id;
     const ID = req.query.ID;
-    
-    let mapobj = await db.getPositionByName(ID);
+    let mapobj = await db.getPositionByName(Name);
     if(!mapobj.length) {
         res.status(404).send({error:"Unsuccessful enquiry"});
     }
@@ -147,7 +146,7 @@ router.put('/emi',auth.checkUserSession,validate(addPosition),wrap(async(req,res
         res.status(403).send({error:"permission denied "});
     }
     else{
-        await db.editMapInfo(ID, Name, Latitude, Longitude, Address,Url, Phone, User);
+        await db.editMapInfo(ID, Name, Latitude, Longitude, Address, Url, Phone);
         res.send({
             "status" : "Done",
             "Name" : Name,
