@@ -31,7 +31,7 @@ const getPosition = z.object({
     }),
 });
 
-const numOfRank = z.object({
+const checkUser = z.object({
     body: z.object({
         Name: z.string()
     })
@@ -167,7 +167,7 @@ router.put('/emi',auth.checkUserSession,validate(addPosition),wrap(async(req,res
     }
 }))
 
-router.get('/numOfRank', validate(numOfRank), wrap(async (req, res) => {
+router.get('/numOfRank', validate(getPosition), wrap(async (req, res) => {
     /**
      * @type {DB}
      */
@@ -184,5 +184,25 @@ router.get('/numOfRank', validate(numOfRank), wrap(async (req, res) => {
         "count": value
         });
 }));
+
+router.delete('/deleteMap', auth.checkUserSession, validate(checkUser),  wrap(async (req, res) => {
+    /**
+     * @type {DB}
+     * */
+    const db = req.app.locals.db;
+    const User = req.session.user.id;
+    const Name = req.body.Name;
+    
+    const data = await db.getPositionByName(Name);
+    const ID = data[0].ID;
+
+    await db.deletePosition(ID, User);
+    res.send({
+        message:"成功!!",
+        Name: Name
+    });
+}));
+
+
 
 module.exports = router;

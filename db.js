@@ -395,6 +395,13 @@ module.exports = class DB {
         );
         return result;
     }
+
+    async deletePosition(ID, User){
+        await this.db.query(
+            'DELETE FROM map WHERE ID = ? AND User = ?',
+            [ID, User]
+        );
+    }
     /* -------- Map end here -------- */
 
     // 查詢某 sp_type
