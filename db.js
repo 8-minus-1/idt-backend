@@ -402,6 +402,13 @@ module.exports = class DB {
             [ID, User]
         );
     }
+
+    async deleteRank(ID, User){
+        await this.db.query(
+            'DELETE FROM rank WHERE ID = ? AND User = ?',
+            [ID, User]
+        );
+    }
     /* -------- Map end here -------- */
 
     // 查詢某 sp_type

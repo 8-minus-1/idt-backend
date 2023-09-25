@@ -31,7 +31,7 @@ const getPosition = z.object({
     }),
 });
 
-const checkUser = z.object({
+const checkPosition = z.object({
     body: z.object({
         Name: z.string()
     })
@@ -100,9 +100,8 @@ router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(a
     const User = req.session.user.id;
     const Name = req.body.Name;
     const Rank = req.body.Rank;
-    // const json = await db.getPositionByName(Name);
-    // const ID = json[0]["ID"];
-    // let Rank = await db.getUserRankPos(User, ID);
+    const json = await db.getPositionByName(Name);
+    const ID = json[0].ID;
 
     await db.addPositionRank(ID, Rank, User);
     res.send({
@@ -185,7 +184,7 @@ router.get('/numOfRank', validate(getPosition), wrap(async (req, res) => {
         });
 }));
 
-router.delete('/deleteMap', auth.checkUserSession, validate(checkUser),  wrap(async (req, res) => {
+router.delete('/deleteMap', auth.checkUserSession, validate(checkPosition),  wrap(async (req, res) => {
     /**
      * @type {DB}
      * */
@@ -203,6 +202,22 @@ router.delete('/deleteMap', auth.checkUserSession, validate(checkUser),  wrap(as
     });
 }));
 
+router.delete('/deleteRank', auth.checkUserSession, validate(checkPosition),  wrap(async (req, res) => {
+    /**
+     * @type {DB}
+     * */
+    const db = req.app.locals.db;
+    const User = req.session.user.id;
+    const Name = req.body.Name;
+    
+    const data = await db.getPositionByName(Name);
+    const ID = data[0].ID;
 
+    await db.deleteRank(ID, User);
+    res.send({
+        message:"成功!!",
+        Name: Name
+    });
+}));
 
 module.exports = router;
