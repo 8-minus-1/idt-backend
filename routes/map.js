@@ -14,9 +14,7 @@ const addPosition = z.object({
         Longitude: z.number(),
         Address: z.string(),
         Url: z.string(),
-        Phone: z.string(),
-        Renew: z.coerce.date(),
-        User: z.string()
+        Phone: z.string()
     }),
 });
 
@@ -46,10 +44,21 @@ router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(a
     const Address = req.body.Address;
     const Url = req.body.Address;
     const Phone = req.body.Phone;
-    const Renew = req.body.Date;
+
+    var date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, 0);
+    const day = String(date.getDate()).padStart(2, 0);
+    const Renew = `${year}-${month}-${day}`;
+    
     const User = req.session.user.id;
-    const length = db.getPositionByName(Name).length;
-    if (!length) {
+
+    console.log(Renew);
+
+    let info = await db.getPositionByName(Name);
+    let len = info.length;
+
+    if (!len) {
         await db.addMap(Name, Latitude, Longitude, Address, Url, Phone, Renew, User);
         res.send({
             status: "OK",
