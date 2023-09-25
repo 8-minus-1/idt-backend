@@ -95,32 +95,40 @@ router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(a
     const db = req.app.locals.db;
     const User = req.session.user.id;
     const Name = req.body.Name;
-    const json = await db.getPositionByName(Name);
-    const ID = json[0]["ID"];
+    const Rank = req.body.Rank;
+    // const json = await db.getPositionByName(Name);
+    // const ID = json[0]["ID"];
+    // let Rank = await db.getUserRankPos(User, ID);
 
-    let Rank = await db.getUserRankPos(User, ID);
-
-    if (Rank > 0) {
-        Rank = req.body.Rank;
-        await db.changePositionRank(ID, Rank, User);
-        res.send({
-            ID: ID,
-            Rank: Rank,
-            User: User
-        });
-    }
-    else {
-        Rank = req.body.Rank;
-        await db.addPositionRank(ID, Rank, User);
-        res.send({
-            ID: ID,
-            Rank: Rank,
-            User: User
-        });
-    }
+    await db.addPositionRank(ID, Rank, User);
+    res.send({
+        ID: ID,
+        Rank: Rank,
+        User: User
+    });
+    
 }));
 
-router.put('/editRank', auth.checkUserSession, )
+router.put('/editRank', auth.checkUserSession, validate(addPositionRank), wrap(async (req, res) => {
+    /**
+     * @type{DB}
+     */
+    const db = req.app.locals.db;
+    const User = req.session.user.id;
+    const Name = req.body.Name;
+    const Rank = req.body.Rank;
+    const json = await db.getPositionByName(Name);
+    const ID = json[0].ID;
+    console.log(Rank);
+
+    await db.changePositionRank(ID, Rank, User);
+    res.send({
+        ID: ID,
+        Rank: Rank,
+        User: User
+    });
+    
+}));
 
 // edit Map info
 router.put('/emi',auth.checkUserSession,validate(addPosition),wrap(async(req,res) => {

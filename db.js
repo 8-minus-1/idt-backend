@@ -380,10 +380,11 @@ module.exports = class DB {
             { ID, Rank, User }
         );
     }
+    
     async changePositionRank(ID, Rank, User) {
         await this.db.query(
             'UPDATE rank SET Rank= ? WHERE ID = ? AND User = ?',
-            { Rank }, ID, User,
+            [ Rank, ID, User ]
         );
     }
     /* -------- Map end here -------- */
