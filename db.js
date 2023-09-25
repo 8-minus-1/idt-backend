@@ -274,8 +274,7 @@ module.exports = class DB {
         )
     }
 
-    async deleteAnswerById(a_id)
-    {
+    async deleteAnswerById(a_id) {
         await this.db.query(
             'DELETE FROM `QA_answer` WHERE `a_id` = ?',
             a_id
@@ -314,11 +313,11 @@ module.exports = class DB {
         );
         return results;
     }
-    
+
     async editContest(c_id, Name, Content, Place, sp_type, StartDate, EndDate, Deadline, Url, Other) {
         await this.db.query(
             'UPDATE Contest SET ? WHERE c_id = ?',
-            [{ Name:Name, Content:Content, Place:Place, sp_type:sp_type, StartDate:StartDate, EndDate:EndDate, Deadline:Deadline, Url:Url, Other:Other }, c_id]
+            [{ Name: Name, Content: Content, Place: Place, sp_type: sp_type, StartDate: StartDate, EndDate: EndDate, Deadline: Deadline, Url: Url, Other: Other }, c_id]
         )
     }
 
@@ -331,8 +330,7 @@ module.exports = class DB {
         return results;
     }
 
-    async deleteContent(c_id)
-    {
+    async deleteContent(c_id) {
         await this.db.query(
             'DELETE FROM `Contest` WHERE `c_id` = ?',
             c_id
@@ -342,9 +340,15 @@ module.exports = class DB {
 
     /* -------- Map start form here -------- */
     async addMap(Name, Latitude, Longitude, Address, Url, Phone, Renew, User) {
+        var date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, 0);
+        const day = String(date.getDate()).padStart(2, 0);
+        Renew = `${year}-${month}-${day}`;
+        
         await this.db.query(
             'INSERT INTO Map SET ?',
-            { Name, Latitude, Longitude, Address, Url, Phone, Renew: Date.now(), User },
+            { Name, Latitude, Longitude, Address, Url, Phone, Renew, User },
         );
     }
 
@@ -357,20 +361,20 @@ module.exports = class DB {
     }
 
     /**/
-    async editMapInfo(ID, Name, Latitude, Longitude, Address,Url, Phone, User) {
+    async editMapInfo(ID, Name, Latitude, Longitude, Address, Url, Phone, User) {
         await this.db.query(
             'UPDATE Map SET ? WHERE ID = ?',
-            [{ Name : Name, Latitude : Latitude, Longitude : Longitude, Address : Address, Url : Url,Phone : Phone, Renew : Date.now(), User : User }, ID]
+            [{ Name: Name, Latitude: Latitude, Longitude: Longitude, Address: Address, Url: Url, Phone: Phone, Renew: Date.now(), User: User }, ID]
         )
     }
-    
-    async addPositionRank(ID, Rank, User){
+
+    async addPositionRank(ID, Rank, User) {
         await this.db.query(
             'INSERT INTO rank SET ?',
             { ID, Rank, User }
         );
     }
-    async changePositionRank(ID, Rank, User){
+    async changePositionRank(ID, Rank, User) {
         await this.db.query(
             'UPDATE rank SET Rank= ? WHERE ID = ? AND User = ?',
             { Rank }, ID, User,
@@ -379,8 +383,7 @@ module.exports = class DB {
     /* -------- Map end here -------- */
 
     // 查詢某 sp_type
-    async getSportById(sp_type)
-    {
+    async getSportById(sp_type) {
         let result = await this.db.query(
             'SELECT * FROM `sports` WHERE sp_id = ?',
             sp_type
@@ -389,24 +392,20 @@ module.exports = class DB {
     }
 
     /* ------ Start of functions for Rule ------ */
-    async newRule(user_id, sp_type, rules, fromVersion)
-    {
+    async newRule(user_id, sp_type, rules, fromVersion) {
         let latest = this.getLatestRule(sp_type);
 
     }
 
-    async getLatestRule(sp_type)
-    {
-        let columns = ['sp_type', 'versionNum','approved', 'r_id'];
+    async getLatestRule(sp_type) {
+        let columns = ['sp_type', 'versionNum', 'approved', 'r_id'];
         let results = await this.db.query(
             'SELECT ?? FROM `rules` WHERE `sp_type` = ? ORDER BY `rules`.`versionNum` DESC',
             [columns, sp_type]
         )
 
-        for(var a = 0; a < results.length; ++a)
-        {
-            if(results[a].approved >= -10)
-            {
+        for (var a = 0; a < results.length; ++a) {
+            if (results[a].approved >= -10) {
                 let latest = await this.db.query(
                     'SELECT * FROM `rules` WHERE `r_id` = ?',
                     results[a].r_id
@@ -417,8 +416,7 @@ module.exports = class DB {
         return null;
     }
 
-    async getUserApprovalStatus(user_id, r_id)
-    {
+    async getUserApprovalStatus(user_id, r_id) {
         let results = await this.db.query(
             'SELECT * FROM `rules_approval_user` WHERE r_id = ? AND user_id = ?',
             [r_id, user_id]
@@ -428,8 +426,7 @@ module.exports = class DB {
 
     //TODO: get所有Version
 
-    async getRuleApprovalCountById(r_id)
-    {
+    async getRuleApprovalCountById(r_id) {
         let results = await this.db.query(
             'SELECT approved, r_id from rules where r_id = ?',
             r_id
@@ -442,24 +439,19 @@ module.exports = class DB {
      * @param {number} approval
      * @param {number} r_id
      */
-    async approveRuleById(user_id, approval, r_id)
-    {
+    async approveRuleById(user_id, approval, r_id) {
         let results = await this.getRuleApprovalCountById(r_id);
 
         let user_approved = await this.getUserApprovalStatus(user_id, r_id);
 
-        if(!results.length /* r_id not found */)
-        {
+        if (!results.length /* r_id not found */) {
             return -1;
         }
-        else if(user_approved.length /* User already approved or disapproved */)
-        {
-            if(user_approved[0].approval === approval /* same approval */)
-            {
+        else if (user_approved.length /* User already approved or disapproved */) {
+            if (user_approved[0].approval === approval /* same approval */) {
                 return 1;
             }
-            else /* Change approval */
-            {
+            else /* Change approval */ {
                 await this.db.query(
                     'UPDATE `rules_approval_user` SET approval = ? WHERE r_id = ? AND user_id = ?',
                     [approval, r_id, user_id]
@@ -468,21 +460,20 @@ module.exports = class DB {
                 let approved = results[0].approved;
                 await this.db.query(
                     'UPDATE `rules` SET ? WHERE r_id = ?',
-                    [{approved: approved + 2 * approval}, r_id]
+                    [{ approved: approved + 2 * approval }, r_id]
                 );
             }
         }
-        else /* User hasn't approve */
-        {
+        else /* User hasn't approve */ {
             await this.db.query(
                 'INSERT INTO `rules_approval_user` SET ?',
-                {user_id, r_id, approval, timestamp: Date.now()}
+                { user_id, r_id, approval, timestamp: Date.now() }
             );
 
             let approved = results[0].approved;
             await this.db.query(
                 'UPDATE `rules` SET ? WHERE r_id = ?',
-                [{approved: approved + approval}, r_id]
+                [{ approved: approved + approval }, r_id]
             );
         }
         return 0;

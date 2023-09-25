@@ -31,6 +31,8 @@ const getPosition = z.object({
     }),
 });
 
+
+
 const router = express.Router();
 
 router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(async (req, res) => {
@@ -44,19 +46,11 @@ router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(a
     const Address = req.body.Address;
     const Url = req.body.Address;
     const Phone = req.body.Phone;
-
-    var date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, 0);
-    const day = String(date.getDate()).padStart(2, 0);
-    const Renew = `${year}-${month}-${day}`;
-    
     const User = req.session.user.id;
-
-    console.log(Renew);
 
     let info = await db.getPositionByName(Name);
     let len = info.length;
+    var Renew;
 
     if (!len) {
         await db.addMap(Name, Latitude, Longitude, Address, Url, Phone, Renew, User);
@@ -125,6 +119,8 @@ router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(a
         });
     }
 }));
+
+router.put('/editRank', auth.checkUserSession, )
 
 // edit Map info
 router.put('/emi',auth.checkUserSession,validate(addPosition),wrap(async(req,res) => {
