@@ -2,6 +2,7 @@ const express = require('express');
 const z = require('zod');
 const uid = require('uid-safe');
 const Got = import('got');
+const rand = require('csprng');
 const crypto = require('node:crypto');
 const { readFile } = require('node:fs/promises');
 const path = require('node:path');
@@ -35,6 +36,17 @@ const SignInRequest = z.object({
         email: z.string().email(),
         password: z.string(),
         recaptchaResponse: z.string(),
+    }),
+});
+const SendPhoneCodeRequest = z.object({
+    body: z.object({
+        phone: z.string().regex(/^09\d{8}$/),
+        recaptchaResponse: z.string(),
+    }),
+});
+const PresentCodeRequest = z.object({
+    body: z.object({
+        code: z.string().regex(/^\d{6}$/)
     }),
 });
 
@@ -298,6 +310,214 @@ router.post('/signout', wrap(async (req, res) => {
     res.clearCookie('connect.sid');
     res.end();
 }));
+
+/**
+ * 
+ * @param {DB} db 
+ * @param {number} userId 
+ * @param {?string} phone
+ * @param {{
+ *  maxSendAttemptsInLast24h: number,
+ *  maxSendAttemptsInLast3Min: number,
+ *  maxPresentAttemptsInLast3Min: number
+ * }} policy
+ * @returns {Promise<{ nextCodePresentAt: number, nextSmsAvailableAt: number }>}
+ */
+async function getPhoneVerificationRateLimitDetails(db, userId, phone, policy) {
+    const twentyFourHoursAgo = Date.now() - 86400 * 1000;
+    const threeMinsAgo = Date.now() - 5 * 60 * 1000;
+
+    const sendSmsAttemptsForUserOrPhoneIn24h = await db.getSendVerificationSmsAttemptsForUserOrPhoneSince(userId, phone, twentyFourHoursAgo);
+    const sendSmsAttemptsForUserOrPhoneIn3Min = await db.getSendVerificationSmsAttemptsForUserOrPhoneSince(userId, phone, threeMinsAgo);
+    const presentCodeAttemptsForUserIn3Min = await db.getPresentPhoneVerificationCodeAttemptsForUserSince(userId, threeMinsAgo);
+
+    let nextSmsAvailableAt = 0;
+    let nextCodePresentAt = 0;
+    if (sendSmsAttemptsForUserOrPhoneIn24h.length >= policy.maxSendAttemptsInLast24h) {
+        sendSmsAttemptsForUserOrPhoneIn24h.sort().reverse();
+        const chosen = sendSmsAttemptsForUserOrPhoneIn24h[policy.maxSendAttemptsInLast24h - 1];
+        nextSmsAvailableAt = Date.now() + (chosen - twentyFourHoursAgo);
+    } else if (sendSmsAttemptsForUserOrPhoneIn3Min.length >= policy.maxSendAttemptsInLast3Min) {
+        sendSmsAttemptsForUserOrPhoneIn3Min.sort().reverse();
+        const chosen = sendSmsAttemptsForUserOrPhoneIn3Min[policy.maxSendAttemptsInLast3Min - 1];
+        nextSmsAvailableAt = Date.now() + (chosen - threeMinsAgo);
+    }
+    if (presentCodeAttemptsForUserIn3Min.length >= policy.maxPresentAttemptsInLast3Min) {
+        presentCodeAttemptsForUserIn3Min.sort().reverse();
+        const chosen = presentCodeAttemptsForUserIn3Min[policy.maxPresentAttemptsInLast3Min - 1];
+        nextCodePresentAt = Date.now() + (chosen - threeMinsAgo);
+    }
+
+    return {
+        nextCodePresentAt,
+        nextSmsAvailableAt,
+    };
+}
+
+const phoneCodeMaxAge = 15 * 60 * 1000;
+const maxPhoneCodeSendAttemptsInLast24h = 10;
+const maxPhoneCodeSendAttemptsInLast3Min = 1;
+const maxPhoneCodePresentAttemptsInLast3Min = 5;
+
+router.get('/flow/phone', wrap(async (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).end();
+    }
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const user = await db.getUser(req.session.user.id);
+    if (user.phone) {
+        return res.send({
+            verified: true,
+        });
+    }
+
+    const codeDetails = await db.getPhoneVerificationCodeForUser(user.id);
+    const codeExpired = codeDetails && (Date.now() - codeDetails.created_at) > phoneCodeMaxAge;
+    const phoneToCheck = codeExpired ? null : codeDetails?.phone;
+    const { nextCodePresentAt, nextSmsAvailableAt } = await getPhoneVerificationRateLimitDetails(db, user.id, phoneToCheck, {
+        maxPresentAttemptsInLast3Min: maxPhoneCodePresentAttemptsInLast3Min,
+        maxSendAttemptsInLast24h: maxPhoneCodeSendAttemptsInLast24h,
+        maxSendAttemptsInLast3Min: maxPhoneCodeSendAttemptsInLast3Min,
+    });
+    const response = {
+        verified: false,
+        nextCodePresentAt,
+        nextSmsAvailableAt,
+    };
+    if (phoneToCheck) response.phone = phoneToCheck;
+    res.send(response);
+}));
+
+async function sendVerificationSms(isDev, config, phone, code) {
+    const shouldUseTestingReceiver = isDev && !!config.verificationTestingReceiverCredentials;
+    const shouldUseApi = !isDev && !!config.smsService;
+
+    if (!shouldUseApi && !shouldUseTestingReceiver) {
+        console.log('Skipping sending sms');
+        return;
+    }
+    let template = await readFile(path.join(__dirname, '..', 'templates', 'phone-verification-sms.txt'), 'utf-8');
+    let content = template.replaceAll('{code}', code);
+    if (shouldUseApi) {
+        throw new Error('SMS service not implemented');
+    } else if (shouldUseTestingReceiver) {
+        let got = (await Got).default;
+        let message = `To: ${phone}
+
+${content}`;
+        let { telegramBotToken, telegramChatId } = config.verificationTestingReceiverCredentials;
+        await got.post('https://api.telegram.org/bot' + telegramBotToken + '/sendMessage', {
+            json: {
+                chat_id: telegramChatId,
+                text: message,
+            },
+        });
+    }
+}
+
+router.post('/flow/phone/send',
+    (req, res, next) => {
+        if (!req.session.user) {
+            return res.status(401).end();
+        }
+        next();
+    },
+    validate(SendPhoneCodeRequest),
+    wrap(async (req, res) => {
+        /**
+         * @type {DB}
+         */
+        const db = req.app.locals.db;
+        const user = await db.getUser(req.session.user.id);
+        if (user.phone) {
+            return res.status(403).send({
+                error: 'alreadyVerified',
+            });
+        }
+
+        //TODO: verify recaptchaResponse
+
+        let phone = req.body.phone;
+        if (await db.hasUserWithPhone(phone)) {
+            return res.status(403).send({
+                error: 'phoneOccupied'
+            });
+        }
+
+        const { nextSmsAvailableAt } = await getPhoneVerificationRateLimitDetails(db, user.id, phone, {
+            maxPresentAttemptsInLast3Min: maxPhoneCodePresentAttemptsInLast3Min,
+            maxSendAttemptsInLast24h: maxPhoneCodeSendAttemptsInLast24h,
+            maxSendAttemptsInLast3Min: maxPhoneCodeSendAttemptsInLast3Min,
+        });
+        if (nextSmsAvailableAt > Date.now()) {
+            return res.status(429).end();
+        }
+        await db.withTransaction(async (db) => {
+            let code = rand(32, 10).slice(0, 6);
+            let { isDev, config } = req.app.locals;
+            await db.setPhoneVerificationCode(user.id, code, phone);
+            await sendVerificationSms(isDev, config, phone, code);
+            await db.recordSendVerificationSmsAttempt(user.id, phone);
+        });
+        return res.end();
+    }),
+);
+
+router.post(
+    '/flow/phone/code',
+    (req, res, next) => {
+        if (!req.session.user) {
+            return res.status(401).end();
+        }
+        next();
+    },
+    validate(PresentCodeRequest),
+    wrap(async (req, res) => {
+        /**
+         * @type {DB}
+         */
+        const db = req.app.locals.db;
+        const user = await db.getUser(req.session.user.id);
+        if (user.phone) {
+            return res.status(403).send({
+                error: 'alreadyVerified',
+            });
+        }
+
+        const codeDetails = await db.getPhoneVerificationCodeForUser(user.id);
+        if (!codeDetails) {
+            return res.status(403).send({
+                error: 'noCodeSentYet',
+            });
+        }
+        if ((Date.now() - codeDetails.created_at) > phoneCodeMaxAge) {
+            return res.status(403).send({
+                error: 'codeExpired',
+            });
+        }
+        const { nextCodePresentAt } = await getPhoneVerificationRateLimitDetails(db, user.id, null, {
+            maxPresentAttemptsInLast3Min: maxPhoneCodePresentAttemptsInLast3Min,
+            maxSendAttemptsInLast24h: maxPhoneCodeSendAttemptsInLast24h,
+            maxSendAttemptsInLast3Min: maxPhoneCodeSendAttemptsInLast3Min,
+        });
+        if (nextCodePresentAt > Date.now()) {
+            return res.status(429).end();
+        }
+        await db.withTransaction(async (db) => {
+            await db.recordPresentPhoneVerificationCodeAttempt(user.id, codeDetails.phone);
+            if (codeDetails.code === req.body.code) {
+                await db.setUserPhone(user.id, codeDetails.phone);
+                await db.markPhoneVerificationCodeAsUsed(user.id);
+                return res.end();
+            } else {
+                return res.status(403).send({ error: 'invalidCode' });
+            }
+        });
+    }),
+);
 
 const fakeSigninSchema = z.object({
     body: z.object({

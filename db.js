@@ -175,6 +175,104 @@ module.exports = class DB {
         return results[0];
     }
 
+    async hasUserWithPhone(phone) {
+        let results = await this.db.query(
+            'SELECT COUNT(*) as count FROM users WHERE phone = ?',
+            phone,
+        );
+        return results[0].count !== 0;
+    }
+
+    async markPhoneVerificationCodeAsUsed(userId) {
+        await this.db.query(
+            'UPDATE phone_verification_codes SET ? WHERE user_id = ?',
+            [{ used_at: Date.now() }, userId],
+        );
+    }
+
+    /**
+     * 
+     * @param {number} userId 
+     * @param {?string} phone 
+     * @param {number} when 
+     * @returns {Promise<number[]>} unixEpochMs of every attempt
+     */
+    async getSendVerificationSmsAttemptsForUserOrPhoneSince(userId, phone, when) {
+        let results;
+        if (phone) {
+            results = await this.db.query(
+                'SELECT created_at FROM send_sms_attempts WHERE (user_id = ? OR phone = ?) AND created_at > ?',
+                [userId, phone, when],
+            );
+        } else {
+            results = await this.db.query(
+                'SELECT created_at FROM send_sms_attempts WHERE user_id = ? AND created_at > ?',
+                [userId, when],
+            );
+        }
+        return results.map(res => res.created_at);
+    }
+
+    /**
+     * 
+     * @param {number} userId
+     */
+    async getPhoneVerificationCodeForUser(userId) {
+        let results = await this.db.query(
+            'SELECT code, created_at, used_at, phone FROM phone_verification_codes WHERE user_id = ?',
+            userId,
+        );
+        if (!results.length) return null;
+        return results[0];
+    }
+
+    /**
+     * 
+     * @param {number} userId
+     * @returns {Promise<number>} Number of attempts
+     */
+    async getPresentPhoneVerificationCodeAttemptsForUserSince(userId, when) {
+        let results = await this.db.query(
+            'SELECT created_at FROM present_phone_verification_code_attempts WHERE user_id = ? AND created_at > ?',
+            [userId, when],
+        );
+        return results.map(res => res.created_at);
+    }
+
+    async setPhoneVerificationCode(userId, code, phone) {
+        let fields = {
+            user_id: userId,
+            code,
+            phone,
+            created_at: Date.now(),
+            used_at: null,
+        };
+        await this.db.query(
+            'REPLACE INTO phone_verification_codes SET ?',
+            fields,
+        );
+    }
+
+    async recordSendVerificationSmsAttempt(userId, phone) {
+        await this.db.query(
+            'INSERT INTO send_sms_attempts SET ?',
+            { user_id: userId, phone, created_at: Date.now() },
+        );
+    }
+
+    async recordPresentPhoneVerificationCodeAttempt(userId, phone) {
+        await this.db.query(
+            'INSERT INTO present_phone_verification_code_attempts SET ?',
+            { user_id: userId, phone, created_at: Date.now() },
+        );
+    }
+
+    async setUserPhone(userId, phone) {
+        await this.db.query(
+            'UPDATE users SET ? WHERE id = ?',
+            [{ phone }, userId],
+        );
+    }
 
     /* ----- Start of functions for QA ----- */
     /**
