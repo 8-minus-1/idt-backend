@@ -4,6 +4,7 @@ const session = require('express-session');
 const FileStore = require('session-file-store')(session);
 const z = require('zod');
 const rfs = require('rotating-file-stream');
+const cors = require('cors');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 if (!require('node:fs').existsSync('./config.json')) {
@@ -109,6 +110,13 @@ async function main() {
     });
     app.locals.db = db;
     app.locals.config = config;
+
+    const corsOptions = {};
+    if (app.locals.isDev) {
+        corsOptions.origin = 'http://localhost:3000'
+        corsOptions.credentials = true;
+    }
+    app.use(cors(corsOptions));
 
     app.get('/', (req, res) => {
         res.send('hello');
