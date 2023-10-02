@@ -525,7 +525,6 @@ module.exports = class DB {
         );
     }
 
-
     async getphotoByphotoid(photoid) {
         let result = await this.db.query(
             'SELECT * FROM photo WHERE photoid = ?',
@@ -534,11 +533,21 @@ module.exports = class DB {
 
         return result;
     }
+
     async deletephotoByphotoid(photoid) {
         await this.db.query(
             'DELETE FROM `photo` WHERE `photoid` = ?',
             photoid
         )
+    }
+
+    async getRankExistence(ID, User){
+        let Rank = await this.db.query(
+            'SELECT * FROM `rank` WHERE ID = ? AND USER = ?',
+            [ID, User]
+        );
+        console.log(Rank);
+        return (Rank.length) ? Rank : -1;
     }
     /* -------- Map end here -------- */
 

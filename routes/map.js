@@ -100,22 +100,27 @@ router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(a
     const User = req.session.user.id;
     const Name = req.body.Name;
     const Rank = req.body.Rank;
-    const json = await db.getPositionByName(Name);
-    const ID = json[0].ID;
 
     let info = await db.getPositionByName(Name);
     let len = info.length;
 
-    if (!len) {
-        await db.addPositionRank(ID, Rank, User);
-        res.send({
-            ID: ID,
-            Rank: Rank,
-            User: User
-        });
+    if (len) {
+        const ID = info[0].ID;
+        let exist = await db.getRankExistence(ID, User);
+        if(exist === -1){
+            await db.addPositionRank(ID, Rank, User);
+            res.send({
+                ID: ID,
+                Rank: Rank,
+                User: User
+            });
+        }
+        else {
+            res.status(405).send({ error: "已評價該地點!!" });
+        }
     }
     else {
-        res.status(401).send({ errot: "已評價過該地點!!" });
+        res.status(402).send({ error: "沒有該地點!!" });
     }
 }));
 
