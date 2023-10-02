@@ -88,7 +88,7 @@ router.get('/getInfo', validate(getPosition), wrap(async (req, res) => {
         res.send(info);
     }
     else {
-        res.status(404).send({ error: "查無此地點!!" })
+        res.status(404).send({ error: "查無此地點!!" });
     }
 }));
 
@@ -103,13 +103,20 @@ router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(a
     const json = await db.getPositionByName(Name);
     const ID = json[0].ID;
 
-    await db.addPositionRank(ID, Rank, User);
-    res.send({
-        ID: ID,
-        Rank: Rank,
-        User: User
-    });
-    
+    let info = await db.getPositionByName(Name);
+    let len = info.length;
+
+    if (!len) {
+        await db.addPositionRank(ID, Rank, User);
+        res.send({
+            ID: ID,
+            Rank: Rank,
+            User: User
+        });
+    }
+    else {
+        res.status(401).send({ errot: "已評價過該地點!!" });
+    }
 }));
 
 router.put('/editRank', auth.checkUserSession, validate(addPositionRank), wrap(async (req, res) => {
@@ -123,17 +130,23 @@ router.put('/editRank', auth.checkUserSession, validate(addPositionRank), wrap(a
     const json = await db.getPositionByName(Name);
     const ID = json[0].ID;
 
-    await db.changePositionRank(ID, Rank, User);
-    res.send({
-        ID: ID,
-        Rank: Rank,
-        User: User
-    });
-    
+    let info = await db.getPositionByName(Name);
+    let len = info.length;
+    if (len && User == json[0].User) {
+        await db.changePositionRank(ID, Rank, User);
+        res.send({
+            ID: ID,
+            Rank: Rank,
+            User: User
+        });
+    }
+    else {
+        res.status(404).send({ error: "未評價該地點!!" });
+    }
 }));
 
 // edit Map info
-router.put('/emi',auth.checkUserSession,validate(addPosition),wrap(async(req,res) => {
+router.put('/emi', auth.checkUserSession, validate(addPosition), wrap(async (req, res) => {
     /**
      * @type {DB}
      */
@@ -149,19 +162,19 @@ router.put('/emi',auth.checkUserSession,validate(addPosition),wrap(async(req,res
     const User = req.session.user.id;
     const ID = req.query.ID;
     let mapobj = await db.getPositionByName(Name);
-    if(!mapobj.length) {
-        res.status(404).send({error:"Unsuccessful enquiry"});
+    if (!mapobj.length) {
+        res.status(404).send({ error: "Unsuccessful enquiry" });
     }
-    else if(mapobj[0].User != User){
-        res.status(403).send({error:"permission denied "});
+    else if (mapobj[0].User != User) {
+        res.status(403).send({ error: "permission denied " });
     }
-    else{
+    else {
         await db.editMapInfo(ID, Name, Latitude, Longitude, Address, Url, Phone);
         res.send({
-            "status" : "Done",
-            "Name" : Name,
-            "User" : User,
-            "Phone" : Phone
+            "status": "Done",
+            "Name": Name,
+            "User": User,
+            "Phone": Phone
         });
     }
 }))
@@ -175,49 +188,65 @@ router.get('/numOfRank', validate(getPosition), wrap(async (req, res) => {
 
     let json = await db.getPositionByName(Name);
     let ID = json[0].ID;
-    
+
     let data = await db.numberOfRank(ID);
     const count = Object.values(data[0]);
     const value = count[0]
     res.send({
         "count": value
+    });
+}));
+
+router.delete('/deleteMap', auth.checkUserSession, validate(checkPosition), wrap(async (req, res) => {
+    /**
+     * @type {DB}
+     * */
+    const db = req.app.locals.db;
+    const User = req.session.user.id;
+    const Name = req.body.Name;
+
+    const data = await db.getPositionByName(Name);
+    const ID = data[0].ID;
+
+    let info = await db.getPositionByName(Name);
+    let len = info.length;
+
+    if (len && User == info[0].User) {
+        await db.deletePosition(ID, User);
+        res.send({
+            message: "成功!!",
+            Name: Name
         });
+    }
+    else {
+        res.status(404).send({ error: "錯誤操作" });
+    }
 }));
 
-router.delete('/deleteMap', auth.checkUserSession, validate(checkPosition),  wrap(async (req, res) => {
+router.delete('/deleteRank', auth.checkUserSession, validate(checkPosition), wrap(async (req, res) => {
     /**
      * @type {DB}
      * */
     const db = req.app.locals.db;
     const User = req.session.user.id;
     const Name = req.body.Name;
-    
+
     const data = await db.getPositionByName(Name);
     const ID = data[0].ID;
 
-    await db.deletePosition(ID, User);
-    res.send({
-        message:"成功!!",
-        Name: Name
-    });
-}));
+    let info = await db.getPositionByName(Name);
+    let len = info.length;
 
-router.delete('/deleteRank', auth.checkUserSession, validate(checkPosition),  wrap(async (req, res) => {
-    /**
-     * @type {DB}
-     * */
-    const db = req.app.locals.db;
-    const User = req.session.user.id;
-    const Name = req.body.Name;
-    
-    const data = await db.getPositionByName(Name);
-    const ID = data[0].ID;
-
-    await db.deleteRank(ID, User);
-    res.send({
-        message:"成功!!",
-        Name: Name
-    });
+    if (len) {
+        await db.deleteRank(ID, User);
+        res.send({
+            message: "成功!!",
+            Name: Name
+        });
+    }
+    else {
+        res.status(404).send({ error: "查無資料!!" });
+    }
 }));
 
 module.exports = router;

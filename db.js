@@ -443,7 +443,7 @@ module.exports = class DB {
         const month = String(date.getMonth() + 1).padStart(2, 0);
         const day = String(date.getDate()).padStart(2, 0);
         Renew = `${year}-${month}-${day}`;
-        
+
         await this.db.query(
             'INSERT INTO Map SET ?',
             { Name, Latitude, Longitude, Address, Url, Phone, Renew, User },
@@ -458,6 +458,14 @@ module.exports = class DB {
         return result;
     }
 
+    async getIdByName(Name) {
+        let result = await this.db.query(
+            'SELECT * FROM Map WHERE Name = ?',
+            Name,
+        )
+        return result[0].ID;
+    }
+
     /**/
     async editMapInfo(ID, Name, Latitude, Longitude, Address, Url, Phone) {
         var date = new Date();
@@ -468,7 +476,7 @@ module.exports = class DB {
 
         await this.db.query(
             'UPDATE Map SET ? WHERE ID = ?',
-            [{ Name: Name, Latitude: Latitude, Longitude: Longitude, Address: Address, Url: Url, Phone: Phone, Renew: Renew}, ID]
+            [{ Name: Name, Latitude: Latitude, Longitude: Longitude, Address: Address, Url: Url, Phone: Phone, Renew: Renew }, ID]
         )
     }
 
@@ -482,11 +490,11 @@ module.exports = class DB {
     async changePositionRank(ID, Rank, User) {
         await this.db.query(
             'UPDATE rank SET Rank= ? WHERE ID = ? AND User = ?',
-            [ Rank, ID, User ]
+            [Rank, ID, User]
         );
     }
 
-    async numberOfRank(ID){
+    async numberOfRank(ID) {
         let result = await this.db.query(
             'SELECT COUNT( ? ) FROM rank',
             ID
@@ -494,14 +502,14 @@ module.exports = class DB {
         return result;
     }
 
-    async deletePosition(ID, User){
+    async deletePosition(ID, User) {
         await this.db.query(
             'DELETE FROM map WHERE ID = ? AND User = ?',
             [ID, User]
         );
     }
 
-    async deleteRank(ID, User){
+    async deleteRank(ID, User) {
         await this.db.query(
             'DELETE FROM rank WHERE ID = ? AND User = ?',
             [ID, User]
