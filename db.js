@@ -409,6 +409,22 @@ module.exports = class DB {
             [ID, User]
         );
     }
+
+
+    async getphotoByphotoid(photoid) {
+        let result = await this.db.query(
+            'SELECT * FROM photo WHERE photoid = ?',
+            photoid,
+        )
+
+        return result;
+    }
+    async deletephotoByphotoid(photoid) {
+        await this.db.query(
+            'DELETE FROM `photo` WHERE `photoid` = ?',
+            photoid
+        )
+    }
     /* -------- Map end here -------- */
 
     // 查詢某 sp_type
