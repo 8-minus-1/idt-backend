@@ -118,6 +118,7 @@ async function main() {
     app.use('/api/auth', require('./routes/auth.js').router);
     app.use('/api/qa', require('./routes/qa.js'));
     app.use('/api/cont', require('./routes/contest.js'));
+    app.use('/api/invite', require('./routes/invite.js'));
     app.use('/api/map', require('./routes/map.js'));
     app.use('/api/rules' ,require('./routes/rules'));
 

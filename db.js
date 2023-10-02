@@ -436,6 +436,15 @@ module.exports = class DB {
     }
     /* ----- End of functions for Contest ----- */
 
+    /* ----- Start of functions for Invite ----- */
+    async addInvite(User_id, Name, Content, Place, sp_type, DateTime, Other) {
+        await this.db.query(
+            'INSERT INTO invite SET ?',
+            { User_id: User_id, Name: Name, Content: Content, Place: Place, sp_type: sp_type, DateTime: DateTime, Other: Other },
+        );
+    }
+    /* ----- End of functions for Invite ----- */
+
     /* -------- Map start form here -------- */
     async addMap(Name, Latitude, Longitude, Address, Url, Phone, Renew, User) {
         var date = new Date();
