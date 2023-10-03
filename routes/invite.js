@@ -38,4 +38,22 @@ router.post('/invitation'/*, auth.checkUserSession*/, validate(AddInviteSchema),
     });
 }));
 
+router.get('/invitation', wrap(async(req, res) => {
+    
+    /**
+      * @type {DB}
+      */
+    const db = req.app.locals.db;
+    
+    let results = await db.getInvite();
+    if(!results.length)
+    {
+         res.status(400).send({error: "無邀請"});
+    }
+    else
+    {
+         res.send(results);
+    }
+}));
+
 module.exports = router;

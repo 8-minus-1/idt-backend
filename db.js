@@ -443,6 +443,13 @@ module.exports = class DB {
             { User_id: User_id, Name: Name, Content: Content, Place: Place, sp_type: sp_type, DateTime: DateTime, Other: Other },
         );
     }
+    async getInvite() {
+        let results = await this.db.query(
+            'SELECT * FROM invite'
+        );
+
+        return results;
+    }
     /* ----- End of functions for Invite ----- */
 
     /* -------- Map start form here -------- */
