@@ -120,7 +120,7 @@ router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(a
         }
     }
     else {
-        res.status(402).send({ error: "沒有該地點!!" });
+        res.status(404).send({ error: "無此地點!!" });
     }
 }));
 
@@ -131,22 +131,27 @@ router.put('/editRank', auth.checkUserSession, validate(addPositionRank), wrap(a
     const db = req.app.locals.db;
     const User = req.session.user.id;
     const Name = req.body.Name;
-    const Rank = req.body.Rank;
-    const json = await db.getPositionByName(Name);
-    const ID = json[0].ID;
+    const Rank = req.body.Rank;    
 
     let info = await db.getPositionByName(Name);
     let len = info.length;
-    if (len && User == json[0].User) {
-        await db.changePositionRank(ID, Rank, User);
-        res.send({
-            ID: ID,
-            Rank: Rank,
-            User: User
-        });
+    if (len) {
+        const ID = info[0].ID;
+        let exist = await db.getRankExistence(ID, User);
+        if(exist===-1){
+            res.status(403).send({error:"無此評分資訊"});
+        }
+        else {
+            await db.changePositionRank(ID, Rank, User);
+            res.send({
+                ID: ID,
+                Rank: Rank,
+                User: User
+            });    
+        }
     }
     else {
-        res.status(404).send({ error: "未評價該地點!!" });
+        res.status(404).send({ error: "無此地點" });
     }
 }));
 
@@ -191,15 +196,20 @@ router.get('/numOfRank', validate(getPosition), wrap(async (req, res) => {
     const db = req.app.locals.db;
     const Name = req.body.Name;
 
-    let json = await db.getPositionByName(Name);
-    let ID = json[0].ID;
+    let info = await db.getPositionByName(Name);
+    if(info.length){
+        const ID = info[0].ID;
+        let data = await db.numberOfRank(ID);
+        const count = Object.values(data[0]);
+        const value = count[0]
+        res.send({
+            "count": value
+        });
+    }
+    else{
+        res.status(404).send({'error': '無此地點;'})
+    }
 
-    let data = await db.numberOfRank(ID);
-    const count = Object.values(data[0]);
-    const value = count[0]
-    res.send({
-        "count": value
-    });
 }));
 
 router.delete('/deleteMap', auth.checkUserSession, validate(checkPosition), wrap(async (req, res) => {
@@ -210,13 +220,13 @@ router.delete('/deleteMap', auth.checkUserSession, validate(checkPosition), wrap
     const User = req.session.user.id;
     const Name = req.body.Name;
 
-    const data = await db.getPositionByName(Name);
-    const ID = data[0].ID;
-
     let info = await db.getPositionByName(Name);
     let len = info.length;
+    
 
     if (len && User == info[0].User) {
+        const ID = info[0].ID;
+        await db.deleteAllRank(ID);
         await db.deletePosition(ID, User);
         res.send({
             message: "成功!!",
@@ -236,21 +246,25 @@ router.delete('/deleteRank', auth.checkUserSession, validate(checkPosition), wra
     const User = req.session.user.id;
     const Name = req.body.Name;
 
-    const data = await db.getPositionByName(Name);
-    const ID = data[0].ID;
-
     let info = await db.getPositionByName(Name);
     let len = info.length;
 
     if (len) {
-        await db.deleteRank(ID, User);
-        res.send({
-            message: "成功!!",
-            Name: Name
-        });
+        const ID = info[0].ID;
+        let exist = await db.getRankExistence(ID,User);
+        if(exist === -1)
+            res.status(403).send({error:"無此評分資訊"});
+        else{
+            await db.deleteRank(ID, User);
+            res.send({
+                message: "成功!!",
+                Name: Name
+            });
+        }
+
     }
     else {
-        res.status(404).send({ error: "查無資料!!" });
+        res.status(404).send({ error: "無此地點!!" });
     }
 }));
 

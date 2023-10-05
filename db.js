@@ -482,7 +482,7 @@ module.exports = class DB {
         return result[0].ID;
     }
 
-    /**/
+
     async editMapInfo(ID, Name, Latitude, Longitude, Address, Url, Phone) {
         var date = new Date();
         const year = date.getFullYear();
@@ -512,7 +512,7 @@ module.exports = class DB {
 
     async numberOfRank(ID) {
         let result = await this.db.query(
-            'SELECT COUNT( ? ) FROM rank',
+            'SELECT COUNT( ID ) FROM rank WHERE ID = ?',
             ID
         );
         return result;
@@ -529,6 +529,13 @@ module.exports = class DB {
         await this.db.query(
             'DELETE FROM rank WHERE ID = ? AND User = ?',
             [ID, User]
+        );
+    }
+
+    async deleteAllRank(ID){
+        await this.db.query(
+            'DELETE FROM rank WHERE ID = ?',
+            ID
         );
     }
 
