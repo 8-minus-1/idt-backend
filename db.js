@@ -450,7 +450,7 @@ module.exports = class DB {
 
         return results;
     }
-    async getSelectType(sp_type) {
+    async getInviteType(sp_type) {
         let results = await this.db.query(
             'SELECT * FROM invite WHERE sp_type = ? ORDER by DateTime',
             sp_type

@@ -56,14 +56,14 @@ router.get('/invitation', wrap(async(req, res) => {
     }
 }));
 
-router.get('/invitation/SelectType', wrap(async(req, res) => {
+router.get('/invitation/InviteType', wrap(async(req, res) => {
     
     /**
       * @type {DB}
       */
     const db = req.app.locals.db;
     const sp_type = req.query.sp_type;
-    let results = await db.getSelectType(sp_type);
+    let results = await db.getInviteType(sp_type);
     if(!sp_type){
         res.status(400).send({error: "未輸入sp_type或格式錯誤"});
     }
