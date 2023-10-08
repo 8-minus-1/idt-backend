@@ -12,6 +12,8 @@ const addPosition = z.object({
         Name: z.string().max(30),
         Latitude: z.number(),
         Longitude: z.number(),
+        City: z.number(),
+        Town: z.number(),
         Address: z.string(),
         Url: z.string(),
         Phone: z.string()
@@ -31,9 +33,9 @@ const getPosition = z.object({
     }),
 });
 
-const checkPosition = z.object({
+const getPhotoID = z.object({
     body: z.object({
-        Name: z.string()
+        PhotoID: z.number()
     })
 });
 
@@ -47,6 +49,8 @@ router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(a
     const Name = req.body.Name;
     const Longitude = req.body.Longitude;
     const Latitude = req.body.Latitude;
+    const City = req.body.City;
+    const Town = req.body.Town;
     const Address = req.body.Address;
     const Url = req.body.Address;
     const Phone = req.body.Phone;
@@ -57,12 +61,14 @@ router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(a
     var Renew;
 
     if (!len) {
-        await db.addMap(Name, Latitude, Longitude, Address, Url, Phone, Renew, User);
+        await db.addMap(Name, Latitude, Longitude, City, Town, Address, Url, Phone, Renew, User);
         res.send({
             status: "OK",
             Name: Name,
             Latitude: Latitude,
             Longitude: Longitude,
+            City: City,
+            Town: Town,
             Address: Address,
             Url: Url,
             Phone: Phone,
@@ -212,7 +218,7 @@ router.get('/numOfRank', validate(getPosition), wrap(async (req, res) => {
 
 }));
 
-router.delete('/deleteMap', auth.checkUserSession, validate(checkPosition), wrap(async (req, res) => {
+router.delete('/deleteMap', auth.checkUserSession, validate(getPosition), wrap(async (req, res) => {
     /**
      * @type {DB}
      * */
@@ -238,7 +244,7 @@ router.delete('/deleteMap', auth.checkUserSession, validate(checkPosition), wrap
     }
 }));
 
-router.delete('/deleteRank', auth.checkUserSession, validate(checkPosition), wrap(async (req, res) => {
+router.delete('/deleteRank', auth.checkUserSession, validate(getPosition), wrap(async (req, res) => {
     /**
      * @type {DB}
      * */
@@ -265,6 +271,28 @@ router.delete('/deleteRank', auth.checkUserSession, validate(checkPosition), wra
     }
     else {
         res.status(404).send({ error: "無此地點!!" });
+    }
+}));
+
+router.delete('/deletePhoto', auth.checkUserSession, validate(getPhotoID), wrap(async (req, res) => {
+    /**
+     * @type {DB}
+     * */
+    const db = req.app.locals.db;
+    const PhotoID = req.body.PhotoID;
+
+    let info = await db.getphotoByphotoid(PhotoID);
+    let len = info.length;
+
+    if (len) {
+        await db.deletephotoByphotoid(PhotoID);
+        res.send({
+            message: "成功!!",
+            PhotoID: PhotoID
+        });
+    }
+    else {
+        res.status(404).send({ error: "無此照片!!" });
     }
 }));
 

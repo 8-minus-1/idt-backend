@@ -489,7 +489,7 @@ module.exports = class DB {
 
         await this.db.query(
             'INSERT INTO Map SET ?',
-            { Name, Latitude, Longitude, Address, Url, Phone, Renew, User },
+            { Name, Latitude, Longitude, City, Town, Address, Url, Phone, Renew, User },
         );
     }
 
@@ -571,7 +571,6 @@ module.exports = class DB {
             'SELECT * FROM photo WHERE photoid = ?',
             photoid,
         )
-
         return result;
     }
 
