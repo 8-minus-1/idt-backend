@@ -91,9 +91,9 @@ router.put('/invitation/EditInvite', auth.checkUserSession, validate(AddInviteSc
     const sp_type = req.body.sp_type;
     const DateTime = req.body.DateTime;
     const Other = req.body.Other;
-    const c_id = req.query.c_id;
+    const i_id = req.query.i_id;
     
-    let contents = await db.getInviteById(c_id);
+    let contents = await db.getInviteById(i_id);
 
     if(!contents.length)
     {
@@ -105,7 +105,7 @@ router.put('/invitation/EditInvite', auth.checkUserSession, validate(AddInviteSc
     }
     else
     {
-        await db.editInvite(c_id, Name, Content, Place, sp_type,DateTime, Other);
+        await db.editInvite(i_id, Name, Content, Place, sp_type,DateTime, Other);
         res.send({
             status: "Success!!",
             user: User_id,

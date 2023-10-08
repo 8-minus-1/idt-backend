@@ -457,18 +457,18 @@ module.exports = class DB {
         );
         return results;
     }
-    async getInviteById(c_id) {
+    async getInviteById(i_id) {
         let results = await this.db.query(
-            'SELECT * FROM invite WHERE c_id = ?',
-            c_id,
+            'SELECT * FROM invite WHERE i_id = ?',
+            i_id,
         )
 
         return results;
     }
-    async editInvite(c_id, Name, Content, Place, sp_type, DateTime, Other) {
+    async editInvite(i_id, Name, Content, Place, sp_type, DateTime, Other) {
         await this.db.query(
-            'UPDATE invite SET ? WHERE c_id = ?',
-            [{ Name: Name, Content: Content, Place: Place, sp_type: sp_type, DateTime: DateTime, Other: Other }, c_id]
+            'UPDATE invite SET ? WHERE i_id = ?',
+            [{ Name: Name, Content: Content, Place: Place, sp_type: sp_type, DateTime: DateTime, Other: Other }, i_id]
         )
     }
     /* ----- End of functions for Invite ----- */
