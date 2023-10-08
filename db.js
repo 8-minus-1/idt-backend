@@ -450,6 +450,13 @@ module.exports = class DB {
 
         return results;
     }
+    async getSelectType(sp_type) {
+        let results = await this.db.query(
+            'SELECT * FROM invite WHERE sp_type = ? ORDER by DateTime',
+            sp_type
+        );
+        return results;
+    }
     /* ----- End of functions for Invite ----- */
 
     /* -------- Map start form here -------- */
