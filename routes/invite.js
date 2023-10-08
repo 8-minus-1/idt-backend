@@ -77,4 +77,40 @@ router.get('/invitation/InviteType', wrap(async(req, res) => {
     }
 }));
 
+router.put('/invitation/EditInvite', auth.checkUserSession, validate(AddInviteSchema),wrap(async(req, res) => {
+    
+    /**
+      * @type {DB}
+      */
+    const db = req.app.locals.db;
+    const User_id = req.session.user.id;
+    //const User_id = "Test";
+    const Name = req.body.Name;
+    const Content = req.body.Content;
+    const Place = req.body.Place;
+    const sp_type = req.body.sp_type;
+    const DateTime = req.body.DateTime;
+    const Other = req.body.Other;
+    const c_id = req.query.c_id;
+    
+    let contents = await db.getInviteById(c_id);
+
+    if(!contents.length)
+    {
+        res.status(404).send({error: "查無邀請"});
+    }
+    else if(contents[0].User_id !== User_id)
+    {
+        res.status(401).send({error: "permission denied"});
+    }
+    else
+    {
+        await db.editInvite(c_id, Name, Content, Place, sp_type,DateTime, Other);
+        res.send({
+            status: "Success!!",
+            user: User_id,
+        });
+    }
+}));
+
 module.exports = router;
