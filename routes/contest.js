@@ -16,6 +16,11 @@ const AddContestSchema = z.object({
         Other: z.string()
     }),
 });
+const getContestByIdSchema = z.object({
+    params: z.object({
+        c_id: z.coerce.number()
+    })
+});
 
 const router = express.Router();
 
@@ -162,7 +167,7 @@ router.get('/contests/:c_id', wrap(async(req, res) => {
     }
 }));
 
-router.delete('/contests/:c_id', auth.checkUserSession, validate(AddContestSchema), wrap(async (req, res)=>{
+router.delete('/contests/:c_id', auth.checkUserSession, validate(getContestByIdSchema), wrap(async (req, res)=>{
     /**
      * @type {DB}
      * */
