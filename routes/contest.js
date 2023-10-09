@@ -30,8 +30,7 @@ router.post('/contests'/*, auth.checkUserSession*/, validate(AddContestSchema), 
       */
 
      const db = req.app.locals.db;
-     //const User_id = req.session.user.id;
-     const User_id = "Test";
+     const User_id = req.session.user.id;
      const Name = req.body.Name;
      const Content = req.body.Content;
      const Place = req.body.Place;
@@ -170,7 +169,7 @@ router.get('/contests/:c_id', wrap(async(req, res) => {
 router.delete('/contests/:c_id', auth.checkUserSession, validate(getContestByIdSchema), wrap(async (req, res)=>{
     /**
      * @type {DB}
-     * */
+     * */     //const User_id = "Test";
     const db = req.app.locals.db;
     const User_id = req.session.user.id;
     const c_id = req.params.c_id;
