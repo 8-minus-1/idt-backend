@@ -27,6 +27,13 @@ const addPositionRank = z.object({
     }),
 });
 
+const addPositionPhoto = z.object({
+    body: z.object({
+        Name: z.string(),
+        PhotoID: z.number()
+    })
+});
+
 const getPosition = z.object({
     body: z.object({
         Name: z.string()
@@ -294,6 +301,34 @@ router.delete('/deletePhoto', auth.checkUserSession, validate(getPhotoID), wrap(
     else {
         res.status(404).send({ error: "無此照片!!" });
     }
+}));
+
+router.post('/addPhoto', auth.checkUserSession, validate(addPositionPhoto), wrap(async (req, res) => {
+    /** 
+     * @type {DB}
+     * */
+    const db = req.app.locals.db;
+    const Name = req.body.Name;
+    const PhotoID = req.body.PhotoID;
+    const User = req.session.user.id;
+
+    let info = await db.getPositionByName(Name);
+    if(info.length){
+        const ID = info[0].ID;
+        let PhotoInfo = await db.getPhotoInfo(ID,User);
+        
+        if(!PhotoInfo.length){
+            await db.addPhoto(ID,User,PhotoID);
+            res.send(
+                {status:'OK', Name:Name,User:User}
+            );
+        }
+        else
+            res.status(405).send({error:"重覆上傳照片!"});
+    }
+    else
+        res.status(404).send({error:"無此地點"});
+
 }));
 
 module.exports = router;

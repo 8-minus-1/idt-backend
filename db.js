@@ -586,9 +586,25 @@ module.exports = class DB {
             'SELECT * FROM `rank` WHERE ID = ? AND USER = ?',
             [ID, User]
         );
-        console.log(Rank);
+        //console.log(Rank);
         return (Rank.length) ? Rank : -1;
     }
+
+    async getPhotoInfo(ID,User){
+        let Photo = await this.db.query(
+            'SELECT * FROM `photo` WHERE `ID` = ? AND `User` = ?',
+            [ID,User]
+        );
+        return Photo;
+    }
+
+    async addPhoto(ID,User,PhotoID){
+        await this.db.query(
+            'INSERT INTO `photo` SET ?',
+            {ID,User,PhotoID}
+        );
+    }
+
     /* -------- Map end here -------- */
 
     // 查詢某 sp_type
