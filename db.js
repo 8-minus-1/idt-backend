@@ -480,7 +480,7 @@ module.exports = class DB {
     /* ----- End of functions for Invite ----- */
 
     /* -------- Map start form here -------- */
-    async addMap(Name, Latitude, Longitude, Address, Url, Phone, Renew, User) {
+    async addMap(Name, Latitude, Longitude, City, Town, Address, Url, Phone, Renew, User) {
         var date = new Date();
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, 0);

@@ -52,7 +52,7 @@ router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(a
     const City = req.body.City;
     const Town = req.body.Town;
     const Address = req.body.Address;
-    const Url = req.body.Address;
+    const Url = req.body.Url;
     const Phone = req.body.Phone;
     const User = req.session.user.id;
 
