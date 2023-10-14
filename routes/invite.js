@@ -9,7 +9,8 @@ const AddInviteSchema = z.object({
         Content: z.string(),
         Place: z.string(),
         sp_type: z.number(),
-        DateTime: z.string().regex(new RegExp('^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$')),
+        Date: z.string().regex(new RegExp('^\\d{4}-\\d{2}-\\d{2}$')),
+        Time: z.string(),
         Other: z.string()
     }),
 });
@@ -33,9 +34,10 @@ router.post('/invitation'/*, auth.checkUserSession*/, validate(AddInviteSchema),
      const Content = req.body.Content;
      const Place = req.body.Place;
      const sp_type = req.body.sp_type;
-     const DateTime = req.body.DateTime;
+     const Date = req.body.Date;
+     const Time = req.body.Time;
      const Other = req.body.Other;
-     await db.addInvite(User_id, Name, Content, Place, sp_type, DateTime, Other);
+     await db.addInvite(User_id, Name, Content, Place, sp_type, Date, Time, Other);
      res.send({
         status: "Success!!",
         user: User_id,
@@ -94,7 +96,8 @@ router.put('/invitation/EditInvite', auth.checkUserSession, validate(AddInviteSc
     const Content = req.body.Content;
     const Place = req.body.Place;
     const sp_type = req.body.sp_type;
-    const DateTime = req.body.DateTime;
+    const Date = req.body.Date;
+    const Time = req.body.Time;
     const Other = req.body.Other;
     const i_id = req.query.i_id;
     
@@ -110,7 +113,7 @@ router.put('/invitation/EditInvite', auth.checkUserSession, validate(AddInviteSc
     }
     else
     {
-        await db.editInvite(i_id, Name, Content, Place, sp_type,DateTime, Other);
+        await db.editInvite(i_id, Name, Content, Place, sp_type,Date, Time, Other);
         res.send({
             status: "Success!!",
             user: User_id,
