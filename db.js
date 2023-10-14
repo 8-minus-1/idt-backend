@@ -471,12 +471,6 @@ module.exports = class DB {
             [{ Name: Name, Content: Content, Place: Place, sp_type: sp_type, Date: Date, Time:Time, Other: Other }, i_id]
         )
     }
-    async deleteInvite(i_id) {
-        await this.db.query(
-            'DELETE FROM `invite` WHERE `i_id` = ?',
-            i_id
-        )
-    }
     /* ----- End of functions for Invite ----- */
 
     /* -------- Map start form here -------- */

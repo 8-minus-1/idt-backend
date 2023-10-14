@@ -14,11 +14,6 @@ const AddInviteSchema = z.object({
         Other: z.string()
     }),
 });
-const getInviteByIdSchema = z.object({
-    params: z.object({
-        i_id: z.coerce.number()
-    })
-});
 
 const router = express.Router();
 
@@ -118,32 +113,6 @@ router.put('/invitation/EditInvite', auth.checkUserSession, validate(AddInviteSc
             status: "Success!!",
             user: User_id,
         });
-    }
-}));
-
-router.delete('/invitation/:i_id', auth.checkUserSession, validate(getInviteByIdSchema), wrap(async (req, res)=>{
-    /**
-     * @type {DB}
-     * */
-    const db = req.app.locals.db;
-    const User_id = req.session.user.id;
-    const i_id = req.params.i_id;
-
-    let contents = await db.getInviteById(i_id);
-
-    if(!contents.length)
-    {
-        res.status(404).send({error: "Content Not Found!"});
-    }
-    else if(contents[0].User_id !== User_id)
-    {
-        console.log(contents[0].User_id, User_id);
-        res.status(401).send({error: "permission denied"});
-    }
-    else
-    {
-        await db.deleteInvite(i_id);
-        res.send({message: "Success", deleted: contents[0]});
     }
 }));
 
