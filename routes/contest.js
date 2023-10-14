@@ -7,7 +7,7 @@ const AddContestSchema = z.object({
     body: z.object({
         Name: z.string(),
         Content: z.string(),
-        Place: z.string(),
+        Place: z.number(),
         sp_type: z.number(),
         StartDate: z.string().regex(new RegExp('^\\d{4}-\\d{2}-\\d{2}$')),
         EndDate: z.string().regex(new RegExp('^\\d{4}-\\d{2}-\\d{2}$')),
@@ -24,7 +24,7 @@ const getContestByIdSchema = z.object({
 
 const router = express.Router();
 
-router.post('/contests'/*, auth.checkUserSession*/, validate(AddContestSchema), wrap(async(req, res) => {
+router.post('/contests', auth.checkUserSession, validate(AddContestSchema), wrap(async(req, res) => {
      /**
       * @type {DB}
       */
