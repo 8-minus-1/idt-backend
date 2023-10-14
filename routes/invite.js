@@ -9,9 +9,21 @@ const AddInviteSchema = z.object({
         Content: z.string(),
         Place: z.string(),
         sp_type: z.number(),
-        Date: z.string().regex(new RegExp('^\\d{4}-\\d{2}-\\d{2}$')),
+        DateTime: z.string().regex(new RegExp('^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}$')),
         Time: z.string(),
         Other: z.string()
+    }),
+});
+
+const getInviteByIdSchema = z.object({
+    params: z.object({
+        i_id: z.coerce.number()
+    })
+});
+
+const GetInvitesSchema = z.object({
+    query: z.object({
+        sp_type: z.coerce.number().optional()
     }),
 });
 
@@ -29,10 +41,10 @@ router.post('/invitation'/*, auth.checkUserSession*/, validate(AddInviteSchema),
      const Content = req.body.Content;
      const Place = req.body.Place;
      const sp_type = req.body.sp_type;
-     const Date = req.body.Date;
+     const DateTime = req.body.DateTime;
      const Time = req.body.Time;
      const Other = req.body.Other;
-     await db.addInvite(User_id, Name, Content, Place, sp_type, Date, Time, Other);
+     await db.addInvite(User_id, Name, Content, Place, sp_type, DateTime, Time, Other);
      res.send({
         status: "Success!!",
         user: User_id,
@@ -58,23 +70,25 @@ router.get('/invitation', wrap(async(req, res) => {
     }
 }));
 
-router.get('/invitation/InviteType', wrap(async(req, res) => {
+router.get('/invitation/InviteType', validate(GetInvitesSchema), wrap(async(req, res) => {
     
     /**
       * @type {DB}
       */
     const db = req.app.locals.db;
     const sp_type = req.query.sp_type;
-    let results = await db.getInviteType(sp_type);
+    //let results = await db.getSportById(sp_type);
+    let sport = (sp_type)? await db.getSportById(sp_type) : [];
     if(!sp_type){
         res.status(400).send({error: "未輸入sp_type或格式錯誤"});
     }
-    else if(!results.length)
+    else if(!sport.length)
     {
          res.status(404).send({error: "查無此類型邀請"});
     }
     else
     {
+        let results = await db.getInviteType(sp_type);
          res.send(results);
     }
 }));
@@ -91,7 +105,7 @@ router.put('/invitation/EditInvite', auth.checkUserSession, validate(AddInviteSc
     const Content = req.body.Content;
     const Place = req.body.Place;
     const sp_type = req.body.sp_type;
-    const Date = req.body.Date;
+    const DateTime = req.body.DateTime;
     const Time = req.body.Time;
     const Other = req.body.Other;
     const i_id = req.query.i_id;
@@ -108,11 +122,58 @@ router.put('/invitation/EditInvite', auth.checkUserSession, validate(AddInviteSc
     }
     else
     {
-        await db.editInvite(i_id, Name, Content, Place, sp_type,Date, Time, Other);
+        await db.editInvite(i_id, Name, Content, Place, sp_type,DateTime, Time, Other);
         res.send({
             status: "Success!!",
             user: User_id,
         });
+    }
+}));
+
+router.get('/invitation/:i_id', validate(getInviteByIdSchema), wrap(async(req, res) => {
+    
+    /**
+      * @type {DB}
+      */
+    const db = req.app.locals.db;
+    const i_id = req.params.i_id;
+    let contents = await db.getInviteById(i_id);
+    if(!i_id){
+        res.status(400).send({error: "未輸入i_id或格式錯誤"});
+    }
+    if(!contents.length)
+    {
+        res.status(404).send({error: "Content Not Found!"});
+    }
+    else
+    {
+        res.send(contents);
+    }
+}));
+
+router.delete('/invitation/:i_id', auth.checkUserSession, validate(getInviteByIdSchema), wrap(async (req, res)=>{
+    /**
+     * @type {DB}
+     * */
+    const db = req.app.locals.db;
+    const User_id = req.session.user.id;
+    const i_id = req.params.i_id;
+
+    let contents = await db.getInviteById(i_id);
+
+    if(!contents.length)
+    {
+        res.status(404).send({error: "Content Not Found!"});
+    }
+    else if(contents[0].User_id !== User_id)
+    {
+        console.log(contents[0].User_id, User_id);
+        res.status(401).send({error: "permission denied"});
+    }
+    else
+    {
+        await db.deleteInvite(i_id);
+        res.send({message: "Success", deleted: contents[0]});
     }
 }));
 
