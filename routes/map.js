@@ -46,6 +46,12 @@ const getPhotoID = z.object({
     })
 });
 
+const searchSchema = z.object({
+    params: z.object({
+        key: z.string()
+    })
+})
+
 const router = express.Router();
 
 router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(async (req, res) => {
@@ -330,5 +336,15 @@ router.post('/addPhoto', auth.checkUserSession, validate(addPositionPhoto), wrap
         res.status(404).send({error:"無此地點"});
 
 }));
+
+router.get('/search/:key', validate(searchSchema), wrap(async (req, res) => {
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const keywords = req.params.key;
+    let results = await db.searchPlaceByName(keywords);
+    res.send(results);
+}))
 
 module.exports = router;

@@ -605,6 +605,19 @@ module.exports = class DB {
         );
     }
 
+    async searchPlaceByName(keywords)
+    {
+        let columns = ['ID', 'Name', 'Address']
+        keywords = '%'+keywords+'%'
+        keywords = keywords.replace(' ', '%')
+        console.log(keywords);
+        let results = await this.db.query(
+            "SELECT ?? FROM `Map` where Name LIKE ?",
+            [columns, keywords]
+        );
+        return results
+    }
+
     /* -------- Map end here -------- */
 
     // 查詢某 sp_type
