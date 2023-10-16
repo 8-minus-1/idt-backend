@@ -461,10 +461,20 @@ module.exports = class DB {
         return results;
     }
     async getInviteType(sp_type) {
-        let results = await this.db.query(
-            'SELECT * FROM invite WHERE sp_type = ? ORDER by DateTime',
-            sp_type
-        );
+        let results = [];
+        if(sp_type === 0)
+        {
+            results = await this.db.query(
+                'SELECT * FROM invite ORDER by DateTime',
+            );
+        }
+        else
+        {
+            results = await this.db.query(
+                'SELECT * FROM invite WHERE sp_type = ? ORDER by DateTime',
+                sp_type
+            );
+        }
         return results;
     }
     async getInviteById(i_id) {

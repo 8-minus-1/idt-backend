@@ -23,7 +23,7 @@ const getInviteByIdSchema = z.object({
 
 const GetInvitesSchema = z.object({
     query: z.object({
-        sp_type: z.coerce.number().optional()
+        sp_type: z.coerce.number()
     }),
 });
 
@@ -79,17 +79,15 @@ router.get('/invitation/InviteType', validate(GetInvitesSchema), wrap(async(req,
     const sp_type = req.query.sp_type;
     //let results = await db.getSportById(sp_type);
     let sport = (sp_type)? await db.getSportById(sp_type) : [];
-    if(!sp_type){
-        res.status(400).send({error: "未輸入sp_type或格式錯誤"});
-    }
-    else if(!sport.length)
+
+    if(sp_type && !sport.length)
     {
          res.status(404).send({error: "查無此類型邀請"});
     }
     else
     {
         let results = await db.getInviteType(sp_type);
-         res.send(results);
+        res.send(results);
     }
 }));
 
