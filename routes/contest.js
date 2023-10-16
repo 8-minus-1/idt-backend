@@ -22,6 +22,12 @@ const getContestByIdSchema = z.object({
     })
 });
 
+const getEventsByTypeSchema = z.object({
+    query: z.object({
+        sp_type: z.coerce.number()
+    })
+})
+
 const router = express.Router();
 
 router.post('/contests', auth.checkUserSession, validate(AddContestSchema), wrap(async(req, res) => {
@@ -85,7 +91,7 @@ router.get('/contests/ordered', wrap(async(req, res) => {
 }));
 
 
-router.get('/contests/SelectType', wrap(async(req, res) => {
+router.get('/contests/SelectType', validate(getEventsByTypeSchema),  wrap(async(req, res) => {
     
     /**
       * @type {DB}
@@ -94,10 +100,7 @@ router.get('/contests/SelectType', wrap(async(req, res) => {
     const sp_type = req.query.sp_type;
     let sport = await db.getSportById(sp_type);
 
-    if(!sp_type){
-        res.status(400).send({error: "未輸入sp_type或格式錯誤"});
-    }
-    else if(!sport.length)
+    if(sp_type && !sport.length)
     {
          res.status(404).send({error: "查無此類型比賽"});
     }
@@ -147,7 +150,7 @@ router.put('/contests/modify', auth.checkUserSession, validate(AddContestSchema)
     }
 }));
 
-router.get('/contests/:c_id', wrap(async(req, res) => {
+router.get('/contests/:c_id', validate(getContestByIdSchema), wrap(async(req, res) => {
     
     /**
       * @type {DB}

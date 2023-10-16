@@ -405,10 +405,20 @@ module.exports = class DB {
 
 
     async getSelectType(sp_type) {
-        let results = await this.db.query(
-            'SELECT * FROM Contest WHERE sp_type = ? ORDER by Deadline',
-            sp_type
-        );
+        let results = {};
+        if(sp_type === 0)
+        {
+            results = await this.db.query(
+                'SELECT * FROM Contest ORDER by Deadline',
+            );
+        }
+        else
+        {
+            results = await this.db.query(
+                'SELECT * FROM Contest WHERE sp_type = ? ORDER by Deadline',
+                sp_type
+            );
+        }
         return results;
     }
 
