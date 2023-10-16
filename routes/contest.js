@@ -92,16 +92,18 @@ router.get('/contests/SelectType', wrap(async(req, res) => {
       */
     const db = req.app.locals.db;
     const sp_type = req.query.sp_type;
-    let results = await db.getSelectType(sp_type);
+    let sport = await db.getSportById(sp_type);
+
     if(!sp_type){
         res.status(400).send({error: "未輸入sp_type或格式錯誤"});
     }
-    else if(!results.length)
+    else if(!sport.length)
     {
          res.status(404).send({error: "查無此類型比賽"});
     }
     else
     {
+         let results = await db.getSelectType(sp_type);
          res.send(results);
     }
 }));
