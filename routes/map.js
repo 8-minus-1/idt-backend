@@ -35,8 +35,8 @@ const addPositionPhoto = z.object({
 });
 
 const getPosition = z.object({
-    body: z.object({
-        Name: z.string()
+    query: z.object({
+        id: z.coerce.number()
     }),
 });
 
@@ -99,9 +99,9 @@ router.get('/getInfo', validate(getPosition), wrap(async (req, res) => {
      * @type {DB}
      */
     const db = req.app.locals.db;
-    const Name = req.query.Name;
+    const id = req.query.id;
 
-    let info = await db.getPositionByName(Name);
+    let info = await db.getPositionByName(id);
     let len = info.length;
     if (len) {
         res.send(info);
@@ -346,5 +346,7 @@ router.get('/search/:key', validate(searchSchema), wrap(async (req, res) => {
     let results = await db.searchPlaceByName(keywords);
     res.send(results);
 }))
+
+router.get('/')
 
 module.exports = router;

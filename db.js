@@ -513,10 +513,10 @@ module.exports = class DB {
         );
     }
 
-    async getPositionByName(Name) {
+    async getPositionByName(id) {
         let result = await this.db.query(
-            'SELECT * FROM Map WHERE Name = ?',
-            Name,
+            'SELECT * FROM Map WHERE ID = ?',
+            id,
         )
         return result;
     }
