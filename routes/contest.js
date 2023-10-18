@@ -6,6 +6,7 @@ const auth = require('./auth');
 const AddContestSchema = z.object({
     body: z.object({
         Name: z.string(),
+        Organizer: z.string(),
         Content: z.string(),
         Place: z.number(),
         sp_type: z.number(),
@@ -38,6 +39,7 @@ router.post('/contests', auth.checkUserSession, validate(AddContestSchema), wrap
      const db = req.app.locals.db;
      const User_id = req.session.user.id;
      const Name = req.body.Name;
+     const Organizer = req.body.Organizer;
      const Content = req.body.Content;
      const Place = req.body.Place;
      const sp_type = req.body.sp_type;
@@ -46,7 +48,7 @@ router.post('/contests', auth.checkUserSession, validate(AddContestSchema), wrap
      const Deadline = req.body.Deadline;
      const Url = req.body.Url;
      const Other = req.body.Other;
-     await db.addContest(User_id, Name, Content, Place, sp_type, StartDate, EndDate, Deadline, Url, Other);
+     await db.addContest(User_id, Name, Organizer, Content, Place, sp_type, StartDate, EndDate, Deadline, Url, Other);
      res.send({
         status: "Success!!",
         user: User_id,
@@ -118,8 +120,8 @@ router.put('/contests/modify', auth.checkUserSession, validate(AddContestSchema)
       */
     const db = req.app.locals.db;
     const User_id = req.session.user.id;
-    //const User_id = "Test";
     const Name = req.body.Name;
+    const Organizer = req.body.Organizer;
     const Content = req.body.Content;
     const Place = req.body.Place;
     const sp_type = req.body.sp_type;
@@ -142,10 +144,9 @@ router.put('/contests/modify', auth.checkUserSession, validate(AddContestSchema)
     }
     else
     {
-        await db.editContest(c_id, Name, Content, Place, sp_type, StartDate, EndDate, Deadline, Url, Other);
+        await db.editContest(c_id, Name, Organizer, Content, Place, sp_type, StartDate, EndDate, Deadline, Url, Other);
         res.send({
-            status: "Success!!",
-            user: User_id,
+            status: "Success!",
         });
     }
 }));

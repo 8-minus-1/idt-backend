@@ -381,10 +381,10 @@ module.exports = class DB {
     /* ----- End of functions for QA ----- */
 
     /* ----- Start of functions for Contest ----- */
-    async addContest(User_id, Name, Content, Place, sp_type, StartDate, EndDate, Deadline, Url, Other) {
+    async addContest(User_id, Name, Organizer, Content, Place, sp_type, StartDate, EndDate, Deadline, Url, Other) {
         await this.db.query(
             'INSERT INTO Contest SET ?',
-            { User_id: User_id, Name: Name, Content: Content, Place: Place, sp_type: sp_type, StartDate: StartDate, EndDate: EndDate, Deadline: Deadline, Url: Url, Other: Other },
+            { User_id: User_id, Organizer: Organizer, Name: Name, Content: Content, Place: Place, sp_type: sp_type, StartDate: StartDate, EndDate: EndDate, Deadline: Deadline, Url: Url, Other: Other },
         );
     }
 
@@ -422,10 +422,10 @@ module.exports = class DB {
         return results;
     }
 
-    async editContest(c_id, Name, Content, Place, sp_type, StartDate, EndDate, Deadline, Url, Other) {
+    async editContest(c_id, Name, Organizer, Content, Place, sp_type, StartDate, EndDate, Deadline, Url, Other) {
         await this.db.query(
             'UPDATE Contest SET ? WHERE c_id = ?',
-            [{ Name: Name, Content: Content, Place: Place, sp_type: sp_type, StartDate: StartDate, EndDate: EndDate, Deadline: Deadline, Url: Url, Other: Other }, c_id]
+            [{ Name: Name, Organizer:Organizer, Content: Content, Place: Place, sp_type: sp_type, StartDate: StartDate, EndDate: EndDate, Deadline: Deadline, Url: Url, Other: Other }, c_id]
         )
     }
 
