@@ -21,15 +21,15 @@ const addPosition = z.object({
 });
 
 const addPositionRank = z.object({
-    body: z.object({
-        Name: z.string(),
+    query: z.object({
+        ID: z.number(),
         Rank: z.number(),
     }),
 });
 
 const addPositionPhoto = z.object({
     body: z.object({
-        Name: z.string(),
+        ID: z.number(),
         PhotoID: z.number()
     })
 });
@@ -41,7 +41,7 @@ const getPosition = z.object({
 });
 
 const getPhotoID = z.object({
-    body: z.object({
+    query: z.object({
         PhotoID: z.number()
     })
 });
@@ -69,7 +69,8 @@ router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(a
     const Phone = req.body.Phone;
     const User = req.session.user.id;
 
-    let info = await db.getPositionByName(Name);
+    let info = await db.searchPlaceByName(Name);
+    //let info = await db.getPositionById(ID);
     let len = info.length;
     var Renew;
 
@@ -101,7 +102,7 @@ router.get('/getInfo', validate(getPosition), wrap(async (req, res) => {
     const db = req.app.locals.db;
     const id = req.query.id;
 
-    let info = await db.getPositionByName(id);
+    let info = await db.getPositionById(id);
     let len = info.length;
     if (len) {
         res.send(info);
@@ -117,10 +118,11 @@ router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(a
      */
     const db = req.app.locals.db;
     const User = req.session.user.id;
-    const Name = req.body.Name;
-    const Rank = req.body.Rank;
+    
+    const ID = req.query.ID;
+    const Rank = req.query.Rank;
 
-    let info = await db.getPositionByName(Name);
+    let info = await db.getPositionById(ID);
     let len = info.length;
 
     if (len) {
@@ -149,10 +151,10 @@ router.put('/editRank', auth.checkUserSession, validate(addPositionRank), wrap(a
      */
     const db = req.app.locals.db;
     const User = req.session.user.id;
-    const Name = req.body.Name;
-    const Rank = req.body.Rank;    
+    const ID = req.query.ID;
+    const Rank = req.query.Rank;    
 
-    let info = await db.getPositionByName(Name);
+    let info = await db.getPositionById(ID);
     let len = info.length;
     if (len) {
         const ID = info[0].ID;
@@ -190,7 +192,8 @@ router.put('/emi', auth.checkUserSession, validate(addPosition), wrap(async (req
     //const Renew = req.body.Date;
     const User = req.session.user.id;
     const ID = req.query.ID;
-    let mapobj = await db.getPositionByName(Name);
+
+    let mapobj = await db.getPositionById(ID);
     if (!mapobj.length) {
         res.status(404).send({ error: "Unsuccessful enquiry" });
     }
@@ -213,9 +216,9 @@ router.get('/numOfRank', validate(getPosition), wrap(async (req, res) => {
      * @type {DB}
      */
     const db = req.app.locals.db;
-    const Name = req.body.Name;
+    const ID = req.query.id;
 
-    let info = await db.getPositionByName(Name);
+    let info = await db.getPositionById(ID);
     if(info.length){
         const ID = info[0].ID;
         let data = await db.numberOfRank(ID);
@@ -237,11 +240,10 @@ router.delete('/deleteMap', auth.checkUserSession, validate(getPosition), wrap(a
      * */
     const db = req.app.locals.db;
     const User = req.session.user.id;
-    const Name = req.body.Name;
+    const ID = req.query.id;
 
-    let info = await db.getPositionByName(Name);
+    let info = await db.getPositionById(ID);
     let len = info.length;
-    
 
     if (len && User == info[0].User) {
         const ID = info[0].ID;
@@ -263,14 +265,14 @@ router.delete('/deleteRank', auth.checkUserSession, validate(getPosition), wrap(
      * */
     const db = req.app.locals.db;
     const User = req.session.user.id;
-    const Name = req.body.Name;
+    const ID = req.query.id;
 
-    let info = await db.getPositionByName(Name);
+    let info = await db.getPositionById(ID);
     let len = info.length;
 
     if (len) {
         const ID = info[0].ID;
-        let exist = await db.getRankExistence(ID,User);
+        let exist = await db.getRankExistence(ID, User);
         if(exist === -1)
             res.status(403).send({error:"無此評分資訊"});
         else{
@@ -280,7 +282,6 @@ router.delete('/deleteRank', auth.checkUserSession, validate(getPosition), wrap(
                 Name: Name
             });
         }
-
     }
     else {
         res.status(404).send({ error: "無此地點!!" });
@@ -314,11 +315,11 @@ router.post('/addPhoto', auth.checkUserSession, validate(addPositionPhoto), wrap
      * @type {DB}
      * */
     const db = req.app.locals.db;
-    const Name = req.body.Name;
+    const ID = req.body.ID;
     const PhotoID = req.body.PhotoID;
     const User = req.session.user.id;
 
-    let info = await db.getPositionByName(Name);
+    let info = await db.getPositionById(ID);
     if(info.length){
         const ID = info[0].ID;
         let PhotoInfo = await db.getPhotoInfo(ID,User);
