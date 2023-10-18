@@ -204,7 +204,7 @@ router.delete('/contests/:c_id', auth.checkUserSession, validate(getContestByIdS
     }
 }));
 
-router.get('/contests/p_id', validate(getEventsByTypeSchema),  wrap(async(req, res) => {
+router.get('/contest', validate(getContestByp_id),  wrap(async(req, res) => {
     
     /**
       * @type {DB}

@@ -405,14 +405,12 @@ module.exports = class DB {
 
     async getSelectType(sp_type) {
         let results = {};
-        if(sp_type === 0)
-        {
+        if (sp_type === 0) {
             results = await this.db.query(
                 'SELECT * FROM Contest ORDER by Deadline',
             );
         }
-        else
-        {
+        else {
             results = await this.db.query(
                 'SELECT * FROM Contest WHERE sp_type = ? ORDER by Deadline',
                 sp_type
@@ -424,7 +422,7 @@ module.exports = class DB {
     async editContest(c_id, Name, Organizer, Content, Place, sp_type, StartDate, EndDate, Deadline, Url, Other) {
         await this.db.query(
             'UPDATE Contest SET ? WHERE c_id = ?',
-            [{ Name: Name, Organizer:Organizer, Content: Content, Place: Place, sp_type: sp_type, StartDate: StartDate, EndDate: EndDate, Deadline: Deadline, Url: Url, Other: Other }, c_id]
+            [{ Name: Name, Organizer: Organizer, Content: Content, Place: Place, sp_type: sp_type, StartDate: StartDate, EndDate: EndDate, Deadline: Deadline, Url: Url, Other: Other }, c_id]
         )
     }
 
@@ -444,14 +442,14 @@ module.exports = class DB {
         )
     }
 
-    async getContestByp_id(p_id){
+    async getContestByp_id(p_id) {
         let result = await this.db.query(
-            'SELECT * FROM Contest WHERE Place = ?',
-            p_id
-        )   
+            'SELECT * FROM `contest` WHERE `Place` = ?',
+            [p_id]
+        )
         return result;
     }
-    
+
     /* ----- End of functions for Contest ----- */
 
     /* ----- Start of functions for Invite ----- */
@@ -470,14 +468,12 @@ module.exports = class DB {
     }
     async getInviteType(sp_type) {
         let results = [];
-        if(sp_type === 0)
-        {
+        if (sp_type === 0) {
             results = await this.db.query(
                 'SELECT * FROM invite ORDER by DateTime',
             );
         }
-        else
-        {
+        else {
             results = await this.db.query(
                 'SELECT * FROM invite WHERE sp_type = ? ORDER by DateTime',
                 sp_type
@@ -587,7 +583,7 @@ module.exports = class DB {
         );
     }
 
-    async deleteAllRank(ID){
+    async deleteAllRank(ID) {
         await this.db.query(
             'DELETE FROM rank WHERE ID = ?',
             ID
@@ -609,7 +605,7 @@ module.exports = class DB {
         )
     }
 
-    async getRankExistence(ID, User){
+    async getRankExistence(ID, User) {
         let Rank = await this.db.query(
             'SELECT * FROM `rank` WHERE ID = ? AND USER = ?',
             [ID, User]
@@ -618,25 +614,24 @@ module.exports = class DB {
         return (Rank.length) ? Rank : -1;
     }
 
-    async getPhotoInfo(ID,User){
+    async getPhotoInfo(ID, User) {
         let Photo = await this.db.query(
             'SELECT * FROM `photo` WHERE `ID` = ? AND `User` = ?',
-            [ID,User]
+            [ID, User]
         );
         return Photo;
     }
 
-    async addPhoto(ID,User,PhotoID){
+    async addPhoto(ID, User, PhotoID) {
         await this.db.query(
             'INSERT INTO `photo` SET ?',
-            {ID,User,PhotoID}
+            { ID, User, PhotoID }
         );
     }
 
-    async searchPlaceByName(keywords)
-    {
+    async searchPlaceByName(keywords) {
         let columns = ['ID', 'Name', 'Address']
-        keywords = '%'+keywords+'%'
+        keywords = '%' + keywords + '%'
         keywords = keywords.replace(' ', '%')
         console.log(keywords);
         let results = await this.db.query(
