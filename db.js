@@ -403,7 +403,6 @@ module.exports = class DB {
         return results;
     }
 
-
     async getSelectType(sp_type) {
         let results = {};
         if(sp_type === 0)
@@ -444,6 +443,15 @@ module.exports = class DB {
             c_id
         )
     }
+
+    async getContestByp_id(p_id){
+        let result = await this.db.query(
+            'SELECT * FROM Contest WHERE Place = ?',
+            p_id
+        )   
+        return result;
+    }
+    
     /* ----- End of functions for Contest ----- */
 
     /* ----- Start of functions for Invite ----- */

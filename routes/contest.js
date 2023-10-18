@@ -29,6 +29,12 @@ const getEventsByTypeSchema = z.object({
     })
 })
 
+const getContestByp_id = z.object({
+    query: z.object({
+        p_id: z.coerce.number()
+    })
+})
+
 const router = express.Router();
 
 router.post('/contests', auth.checkUserSession, validate(AddContestSchema), wrap(async(req, res) => {
@@ -197,4 +203,24 @@ router.delete('/contests/:c_id', auth.checkUserSession, validate(getContestByIdS
         res.send({message: "Success", deleted: contents[0]});
     }
 }));
+
+router.get('/contests/p_id', validate(getEventsByTypeSchema),  wrap(async(req, res) => {
+    
+    /**
+      * @type {DB}
+      */
+    const db = req.app.locals.db;
+    const p_id = req.query.p_id;
+    let contests = await db.getContestByp_id(p_id);
+
+    if(p_id && !contests.length)
+    {
+        res.status(404).send({error: "查無該地點有比賽"});
+    }
+    else
+    {
+        res.send(contests);
+    }
+}));
+
 module.exports = router;
