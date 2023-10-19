@@ -552,6 +552,21 @@ module.exports = class DB {
             'INSERT INTO rank SET ?',
             { ID, Rank, User }
         );
+
+        let data = await this.db.query(
+            'SELECT * FROM `Rank` WHERE `ID` = ?',
+            ID
+        );
+        let rank = 0;
+        for (let n = 0; n < data.length; n++)
+            rank += data[n].Rank;
+        rank /= data.length;
+        let map = getPositionById(ID);
+
+        await this.db.query(
+            'UPDATE MAP SET ? WHERE ID = ?',
+            [{ Name: map[0].Name, Latitude: map[0].Latitude, Longitude: map[0].Longitude, Address: map[0].Address, Url: map[0].Url, Phone: map[0].Phone, Rank: rank, Renew: data[0].Renew }, ID]
+        )
     }
 
     async changePositionRank(ID, Rank, User) {
@@ -639,6 +654,13 @@ module.exports = class DB {
             [columns, keywords]
         );
         return results
+    }
+
+    async getAllPosition(){
+        let result = await this.db.query(
+            'SELECT * FROM Map WHERE 1'
+        )
+        return result;
     }
 
     /* -------- Map end here -------- */

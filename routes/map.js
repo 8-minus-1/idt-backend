@@ -348,6 +348,16 @@ router.get('/search/:key', validate(searchSchema), wrap(async (req, res) => {
     res.send(results);
 }))
 
-router.get('/')
+router.get('/allPos',  wrap(async (req, res) => {
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    let results = await db.getAllPosition();
+    if(results.length)
+        res.send(results);
+    else
+        res.status(404).send("目前資料庫沒有資料");
+}))
 
 module.exports = router;
