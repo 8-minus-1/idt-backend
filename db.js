@@ -504,7 +504,7 @@ module.exports = class DB {
     /* ----- End of functions for Invite ----- */
 
     /* -------- Map start form here -------- */
-    async addMap(Name, Latitude, Longitude, City, Town, Address, Url, Phone, Renew, User) {
+    async addMap(Name, Latitude, Longitude, City, Town, Address, OpenTime, CloseTime, Price, Parking, sp_type, Url, Phone, Renew, User) {
         var date = new Date();
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, 0);
@@ -513,7 +513,7 @@ module.exports = class DB {
 
         await this.db.query(
             'INSERT INTO Map SET ?',
-            { Name, Latitude, Longitude, City, Town, Address, Url, Phone, Renew, User },
+            { Name, Latitude, Longitude, City, Town, Address, OpenTime, CloseTime, Price, Parking, sp_type, Url, Phone, Renew, User},
         );
     }
 
@@ -534,7 +534,7 @@ module.exports = class DB {
     }
 
 
-    async editMapInfo(ID, Name, Latitude, Longitude, Address, Url, Phone) {
+    async editMapInfo(ID, Name, Latitude, Longitude, Address, OpenTime, CloseTime, Price, Parking, sp_type, Url, Phone) {
         var date = new Date();
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, 0);
@@ -543,7 +543,7 @@ module.exports = class DB {
 
         await this.db.query(
             'UPDATE Map SET ? WHERE ID = ?',
-            [{ Name: Name, Latitude: Latitude, Longitude: Longitude, Address: Address, Url: Url, Phone: Phone, Renew: Renew }, ID]
+            [{ Name: Name, Latitude: Latitude, Longitude: Longitude, Address: Address,OpenTime:OpenTime,CloseTime:CloseTime, Price:Price,Parking:Parking,sp_type:sp_type,Url: Url, Phone: Phone, Renew: Renew }, ID]
         )
     }
 
