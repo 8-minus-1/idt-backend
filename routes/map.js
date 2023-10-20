@@ -119,7 +119,7 @@ router.get('/getInfo', validate(getPosition), wrap(async (req, res) => {
     let info = await db.getPositionById(id);
     let len = info.length;
     if (len) {
-        res.send(info);
+        res.send(info[0]);
     }
     else {
         res.status(404).send({ error: "查無此地點!!" });

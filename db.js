@@ -444,7 +444,7 @@ module.exports = class DB {
 
     async getContestByp_id(p_id) {
         let result = await this.db.query(
-            'SELECT * FROM `contest` WHERE `Place` = ?',
+            'SELECT * FROM `Contest` WHERE `Place` = ?',
             [p_id]
         )
         return result;
