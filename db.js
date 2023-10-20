@@ -453,10 +453,10 @@ module.exports = class DB {
     /* ----- End of functions for Contest ----- */
 
     /* ----- Start of functions for Invite ----- */
-    async addInvite(User_id, Name, Content, Place, sp_type, DateTime, Other) {
+    async addInvite(User_id, Name, Place, sp_type, DateTime, Other) {
         await this.db.query(
             'INSERT INTO invite SET ?',
-            { User_id: User_id, Name: Name, Content: Content, Place: Place, sp_type: sp_type, DateTime: DateTime, Other: Other },
+            { User_id: User_id, Name: Name, Place: Place, sp_type: sp_type, DateTime: DateTime, Other: Other },
         );
     }
     async getInvite() {
@@ -489,10 +489,10 @@ module.exports = class DB {
 
         return results;
     }
-    async editInvite(i_id, Name, Content, Place, sp_type, DateTime, Other) {
+    async editInvite(i_id, Name, Place, sp_type, DateTime, Other) {
         await this.db.query(
             'UPDATE invite SET ? WHERE i_id = ?',
-            [{ Name: Name, Content: Content, Place: Place, sp_type: sp_type, DateTime: DateTime, Other: Other }, i_id]
+            [{ Name: Name, Place: Place, sp_type: sp_type, DateTime: DateTime, Other: Other }, i_id]
         )
     }
     async deleteInvite(i_id) {

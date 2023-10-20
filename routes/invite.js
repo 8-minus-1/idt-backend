@@ -6,7 +6,6 @@ const auth = require('./auth');
 const AddInviteSchema = z.object({
     body: z.object({
         Name: z.string(),
-        Content: z.string(),
         Place: z.number(),
         sp_type: z.number(),
         DateTime: z.number(),
@@ -36,12 +35,11 @@ router.post('/invitation'/*, auth.checkUserSession*/, validate(AddInviteSchema),
      const db = req.app.locals.db;
      const User_id = req.session.user.id;
      const Name = req.body.Name;
-     const Content = req.body.Content;
      const Place = req.body.Place;
      const sp_type = req.body.sp_type;
      const DateTime = req.body.DateTime;
      const Other = req.body.Other;
-     await db.addInvite(User_id, Name, Content, Place, sp_type, DateTime, Other);
+     await db.addInvite(User_id, Name, Place, sp_type, DateTime, Other);
      res.send({
         status: "Success!",
     });
@@ -95,7 +93,6 @@ router.put('/invitation/EditInvite', auth.checkUserSession, validate(AddInviteSc
     const User_id = req.session.user.id;
     //const User_id = "Test";
     const Name = req.body.Name;
-    const Content = req.body.Content;
     const Place = req.body.Place;
     const sp_type = req.body.sp_type;
     const DateTime = req.body.DateTime;
@@ -114,7 +111,7 @@ router.put('/invitation/EditInvite', auth.checkUserSession, validate(AddInviteSc
     }
     else
     {
-        await db.editInvite(i_id, Name, Content, Place, sp_type,DateTime, Other);
+        await db.editInvite(i_id, Name, Place, sp_type,DateTime, Other);
         res.send({
             status: "Success!!",
             user: User_id,
