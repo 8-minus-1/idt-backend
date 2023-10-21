@@ -558,9 +558,12 @@ module.exports = class DB {
             ID
         );
         let rank = 0;
-        for (let n = 0; n < data.length; n++)
+        if(data.length)
+        {
+            for (let n = 0; n < data.length; n++)
             rank += data[n].Rank;
-        rank /= data.length;
+            rank /= data.length;
+        }
 
         await this.db.query(
             'UPDATE MAP SET ? WHERE ID = ?',
