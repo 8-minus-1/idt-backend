@@ -547,7 +547,7 @@ module.exports = class DB {
         )
     }
 
-    async addPositionRank(ID, Rank, User) {
+    async addPositionRank(ID, Rank, User, map) {
         await this.db.query(
             'INSERT INTO rank SET ?',
             { ID, Rank, User }
@@ -561,7 +561,6 @@ module.exports = class DB {
         for (let n = 0; n < data.length; n++)
             rank += data[n].Rank;
         rank /= data.length;
-        let map = getPositionById(ID);
 
         await this.db.query(
             'UPDATE MAP SET ? WHERE ID = ?',

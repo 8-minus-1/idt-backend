@@ -27,8 +27,8 @@ const addPosition = z.object({
 
 const addPositionRank = z.object({
     query: z.object({
-        ID: z.number(),
-        Rank: z.number(),
+        ID: z.string(),
+        Rank: z.string(),
     }),
 });
 
@@ -133,8 +133,8 @@ router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(a
     const db = req.app.locals.db;
     const User = req.session.user.id;
     
-    const ID = req.query.ID;
-    const Rank = req.query.Rank;
+    const ID = parseInt(req.query.ID);
+    const Rank = parseInt(req.query.Rank);
 
     let info = await db.getPositionById(ID);
     let len = info.length;
@@ -143,7 +143,7 @@ router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(a
         const ID = info[0].ID;
         let exist = await db.getRankExistence(ID, User);
         if(exist === -1){
-            await db.addPositionRank(ID, Rank, User);
+            await db.addPositionRank(ID, Rank, User, info);
             res.send({
                 ID: ID,
                 Rank: Rank,
