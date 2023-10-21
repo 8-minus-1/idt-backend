@@ -41,7 +41,7 @@ const addPositionPhoto = z.object({
 
 const getPosition = z.object({
     query: z.object({
-        id: z.coerce.number()
+        id: z.string()
     }),
 });
 
@@ -114,7 +114,7 @@ router.get('/getInfo', validate(getPosition), wrap(async (req, res) => {
      * @type {DB}
      */
     const db = req.app.locals.db;
-    const id = req.query.id;
+    const id = parseInt(req.query.id);
 
     let info = await db.getPositionById(id);
     let len = info.length;
