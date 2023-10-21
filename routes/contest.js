@@ -17,6 +17,25 @@ const AddContestSchema = z.object({
         Other: z.string()
     }),
 });
+
+const ModifyContestSchema = z.object({
+    body: z.object({
+        Name: z.string(),
+        Organizer: z.string(),
+        Content: z.string(),
+        Place: z.number(),
+        sp_type: z.number(),
+        StartDate: z.string().regex(new RegExp('^\\d{4}-\\d{2}-\\d{2}$')),
+        EndDate: z.string().regex(new RegExp('^\\d{4}-\\d{2}-\\d{2}$')),
+        Deadline: z.string().regex(new RegExp('^\\d{4}-\\d{2}-\\d{2}$')),
+        Url: z.string(),
+        Other: z.string()
+    }),
+    params: z.object({
+        c_id: z.coerce.number()
+    })
+});
+
 const getContestByIdSchema = z.object({
     params: z.object({
         c_id: z.coerce.number()
@@ -30,7 +49,7 @@ const getEventsByTypeSchema = z.object({
 })
 
 const getContestByp_id = z.object({
-    query: z.object({
+    params: z.object({
         p_id: z.coerce.number()
     })
 })
@@ -70,14 +89,8 @@ router.get('/contests', wrap(async(req, res) => {
     const db = req.app.locals.db;
     
     let results = await db.getContest();
-    if(!results.length)
-    {
-         res.status(400).send({error: "無比賽"});
-    }
-    else
-    {
-         res.send(results);
-    }
+
+    res.send(results);
 }));
 
 router.get('/contests/ordered', wrap(async(req, res) => {
@@ -88,14 +101,9 @@ router.get('/contests/ordered', wrap(async(req, res) => {
     const db = req.app.locals.db;
     
     let results = await db.getOrderedContest();
-    if(!results.length)
-    {
-         res.status(400).send({error: "無比賽"});
-    }
-    else
-    {
-         res.send(results);
-    }
+
+    res.send(results);
+
 }));
 
 
@@ -119,7 +127,7 @@ router.get('/contests/SelectType', validate(getEventsByTypeSchema),  wrap(async(
     }
 }));
 
-router.put('/contests/modify', auth.checkUserSession, validate(AddContestSchema),wrap(async(req, res) => {
+router.put('/contests/modify/:c_id', auth.checkUserSession, validate(ModifyContestSchema),wrap(async(req, res) => {
     
     /**
       * @type {DB}
@@ -136,7 +144,7 @@ router.put('/contests/modify', auth.checkUserSession, validate(AddContestSchema)
     const Deadline = req.body.Deadline;
     const Url = req.body.Url;
     const Other = req.body.Other;
-    const c_id = req.query.c_id;
+    const c_id = req.params.c_id;
     
     let contents = await db.getContestById(c_id);
 
@@ -204,21 +212,23 @@ router.delete('/contests/:c_id', auth.checkUserSession, validate(getContestByIdS
     }
 }));
 
-router.get('/contest', validate(getContestByp_id),  wrap(async(req, res) => {
+router.get('/contests/place/:p_id', validate(getContestByp_id),  wrap(async(req, res) => {
     
     /**
       * @type {DB}
       */
     const db = req.app.locals.db;
-    const p_id = req.query.p_id;
-    let contests = await db.getContestByp_id(p_id);
+    const p_id = req.params.p_id;
 
-    if(p_id && !contests.length)
+    let place = await  db.getPositionById(p_id);
+
+    if(!place.length)
     {
-        res.status(404).send({error: "查無該地點有比賽"});
+        res.status(404).send({error: "地點不存在"});
     }
     else
     {
+        let contests = await db.getContestByp_id(p_id);
         res.send(contests);
     }
 }));
