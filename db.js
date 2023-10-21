@@ -645,7 +645,7 @@ module.exports = class DB {
     }
 
     async searchPlaceByName(keywords) {
-        let columns = ['ID', 'Name', 'Address']
+        let columns = ['ID', 'Name', 'Address', 'Latitude', 'Longitude']
         keywords = '%' + keywords + '%'
         keywords = keywords.replace(' ', '%')
         console.log(keywords);
