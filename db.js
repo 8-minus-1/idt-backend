@@ -554,7 +554,7 @@ module.exports = class DB {
         );
 
         let data = await this.db.query(
-            'SELECT * FROM `Rank` WHERE `ID` = ?',
+            'SELECT * FROM `rank` WHERE `ID` = ?',
             ID
         );
         let rank = 0;
@@ -566,8 +566,8 @@ module.exports = class DB {
         }
 
         await this.db.query(
-            'UPDATE MAP SET ? WHERE ID = ?',
-            [{ Name: map[0].Name, Latitude: map[0].Latitude, Longitude: map[0].Longitude, Address: map[0].Address, Url: map[0].Url, Phone: map[0].Phone, Rank: rank, Renew: data[0].Renew }, ID]
+            'UPDATE Map SET ? WHERE ID = ?',
+            [{ Rank: rank }, ID]
         )
     }
 

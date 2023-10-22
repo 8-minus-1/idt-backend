@@ -28,7 +28,7 @@ const addPosition = z.object({
 const addPositionRank = z.object({
     body: z.object({
         ID: z.number(),
-        Rank: z.number(),
+        Rank: z.number()
     }),
 });
 
@@ -151,7 +151,7 @@ router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(a
             });
         }
         else {
-            res.status(405).send({ error: "已評價該地點!!" });
+            res.status(403).send({ error: "已評價該地點!!" });
         }
     }
     else {
