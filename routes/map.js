@@ -10,8 +10,6 @@ const app = express();
 const addPosition = z.object({
     body: z.object({
         Name: z.string().max(30),
-        Latitude: z.number(),
-        Longitude: z.number(),
         City: z.number(),
         Town: z.number(),
         Address: z.string(),
@@ -65,8 +63,6 @@ router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(a
      */
     const db = req.app.locals.db;
     const Name = req.body.Name;
-    const Longitude = req.body.Longitude;
-    const Latitude = req.body.Latitude;
     const City = req.body.City;
     const Town = req.body.Town;
     const Address = req.body.Address;
@@ -84,12 +80,10 @@ router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(a
     var Renew;
 
     if (!len) {
-        await db.addMap(Name, Latitude, Longitude, City, Town, Address, OpenTime, CloseTime, Price, Parking, sp_type, Url, Phone, Renew, User);
+        await db.addMap(Name, City, Town, Address, OpenTime, CloseTime, Price, Parking, sp_type, Url, Phone, Renew, User);
         res.send({
             status: "OK",
             Name: Name,
-            Latitude: Latitude,
-            Longitude: Longitude,
             City: City,
             Town: Town,
             Address: Address,

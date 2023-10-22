@@ -7,6 +7,24 @@ const rfs = require('rotating-file-stream');
 const cors = require('cors');
 const fs = require('node:fs/promises');
 const path = require('node:path');
+
+// const NodeGeocoder = require('node-geocoder');
+
+// const options = {
+//   provider: 'google',
+//   httpAdapter: 'https',
+//   // Optional depending on the providers
+//   apiKey: 'AIzaSyDXH9MDaTGeJUlZZznkjZ4_I9wb1qWoFgE', // for Mapquest, OpenCage, Google Premier
+//   formatter: null // 'gpx', 'string', ...
+// };
+
+// const geocoder = NodeGeocoder(options);
+
+// // Using callback
+// const res =await geocoder.geocode('元智大學');
+
+// console.log(res);
+
 if (!require('node:fs').existsSync('./config.json')) {
     console.error('請先建立 config.json！');
     return;
