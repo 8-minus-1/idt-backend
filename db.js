@@ -568,10 +568,10 @@ module.exports = class DB {
         )
     }
 
-    async addPositionRank(ID, Rank, User, map) {
+    async addPositionRank(ID, Rank, User, map, Comment) {
         await this.db.query(
             'INSERT INTO rank SET ?',
-            { ID, Rank, User }
+            { ID, Rank, User, Comment }
         );
 
         let data = await this.db.query(
@@ -650,6 +650,33 @@ module.exports = class DB {
         );
         //console.log(Rank);
         return (Rank.length) ? Rank : -1;
+    }
+
+    async getRankExistencebyID(ID) {
+        let Rank = await this.db.query(
+            'SELECT * FROM `rank` WHERE ID = ? ',
+            ID
+        );
+        //console.log(Rank);
+        return (Rank.length) ? Rank : -1;
+    }
+
+    async getRankInfo(ID, User) {
+        let Rank = await this.db.query(
+            'SELECT * FROM `rank` WHERE ID = ? AND USER = ?',
+            [ID, User]
+        );
+        //console.log(Rank);
+        return Rank;
+    }
+
+    async getPosInfo(ID) {
+        let Rank = await this.db.query(
+            'SELECT * FROM `rank` WHERE ID = ?',
+            ID
+        );
+        //console.log(Rank);
+        return Rank;
     }
 
     async getPhotoInfo(ID, User) {

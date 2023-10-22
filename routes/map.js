@@ -26,7 +26,8 @@ const addPosition = z.object({
 const addPositionRank = z.object({
     body: z.object({
         ID: z.number(),
-        Rank: z.number()
+        Rank: z.number(),
+        Comment: z.string()
     }),
 });
 
@@ -54,6 +55,12 @@ const searchSchema = z.object({
         key: z.string()
     })
 })
+
+const getRankInfo = z.object({
+    query: z.object({
+        id: z.coerce.number()
+    })
+});
 
 const router = express.Router();
 
@@ -129,6 +136,7 @@ router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(a
     
     const ID = req.body.ID;
     const Rank = req.body.Rank;
+    const Comment = req.body.Comment;
 
     let info = await db.getPositionById(ID);
     let len = info.length;
@@ -137,7 +145,7 @@ router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(a
         const ID = info[0].ID;
         let exist = await db.getRankExistence(ID, User);
         if(exist === -1){
-            await db.addPositionRank(ID, Rank, User, info);
+            await db.addPositionRank(ID, Rank, User, info, Comment);
             res.send({
                 ID: ID,
                 Rank: Rank,
@@ -371,6 +379,45 @@ router.get('/allPos',  wrap(async (req, res) => {
         res.send(results);
     else
         res.status(404).send("目前資料庫沒有資料");
+}))
+
+router.get('/RankByUser', auth.checkUserSession, validate(getRankInfo) ,wrap(async (req, res) => {
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const User = req.session.user.id;
+    const ID = req.query.id;
+
+    let status = await db.getRankExistence(ID,User);
+
+    if(status != -1){
+        var results = await db.getRankInfo(ID,User);
+        res.send(results);
+    }
+    else{
+        // res.send(0);
+       res.status(404).send("目前資料庫沒有資料");
+    }
+}))
+
+router.get('/RankByPlace', auth.checkUserSession, validate(getRankInfo) ,wrap(async (req, res) => {
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const ID = req.query.id;
+
+    let status = await db.getRankExistencebyID(ID);
+
+    if(status != -1){
+        var results = await db.getPosInfo(ID);
+        res.send(results);
+    }
+    else{
+        // res.send(0);
+       res.status(404).send("目前資料庫沒有資料");
+    }
 }))
 
 module.exports = router;
