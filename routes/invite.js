@@ -25,9 +25,15 @@ const GetInvitesSchema = z.object({
     }),
 });
 
+const signupInvitationSchema = z.object({
+    params: z.object({
+        i_id: z.coerce.number()
+    })
+})
+
 const router = express.Router();
 
-router.post('/invitation'/*, auth.checkUserSession*/, validate(AddInviteSchema), wrap(async(req, res) => {
+router.post('/invitation', auth.checkUserSession, validate(AddInviteSchema), wrap(async(req, res) => {
      /**
       * @type {DB}
       */
@@ -165,5 +171,59 @@ router.delete('/invitation/:i_id', auth.checkUserSession, validate(getInviteById
         res.send({message: "Success", deleted: contents[0]});
     }
 }));
+
+router.post('/signup/:i_id', auth.checkUserSession, validate(signupInvitationSchema), wrap( async (req, res)=>
+{
+    /**
+     * @type { DB }
+     */
+    const db = req.app.locals.db;
+    const User_id = req.session.user.id;
+    const i_id = req.params.i_id;
+
+    let invitation = await db.getInviteById(i_id);
+    console.log(invitation);
+
+    if( !invitation.length )
+    {
+        res.status(404).send({error: "找不到此公開邀請，故無法報名"});
+    }
+    else if(invitation[0].User_id === User_id)
+    {
+        res.status(403).send({error: "無法報名自己建立的活動！"})
+    }
+    else
+    {
+        // true or false
+        let tof = await db.alreadySignedUp(User_id, i_id);
+        if(tof)
+        {
+            res.status(409 /* Conflict */).send({error: "您已經報名過了"})
+        }
+        else
+        {
+            db.signupPublicInv(User_id, i_id);
+            res.send({status: "報名成功"})
+        }
+    }
+}));
+
+router.get('/signup/status/:i_id', auth.checkUserSession, validate(signupInvitationSchema), wrap( async (req, res) => {
+    const db = req.app.locals.db;
+    const User_id = req.session.user.id;
+    const i_id = req.params.i_id;
+    let invitation = await db.getInviteById(i_id);
+
+    if( !invitation.length )
+    {
+        res.status(404).send({error: "找不到此公開邀請，故無法報名"});
+    }
+    else
+    {
+        // true or false
+        let tof = await db.alreadySignedUp(User_id, i_id);
+        res.send({status: tof});
+    }
+}))
 
 module.exports = router;

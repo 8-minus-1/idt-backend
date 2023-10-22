@@ -481,26 +481,47 @@ module.exports = class DB {
         }
         return results;
     }
+
     async getInviteById(i_id) {
         let results = await this.db.query(
             'SELECT * FROM invite WHERE i_id = ?',
             i_id,
         )
-
         return results;
     }
+
     async editInvite(i_id, Name, Place, sp_type, DateTime, Other) {
         await this.db.query(
             'UPDATE invite SET ? WHERE i_id = ?',
             [{ Name: Name, Place: Place, sp_type: sp_type, DateTime: DateTime, Other: Other }, i_id]
         )
     }
+
     async deleteInvite(i_id) {
         await this.db.query(
             'DELETE FROM `invite` WHERE `i_id` = ?',
             i_id
         )
     }
+
+    async alreadySignedUp(user_id, i_id)
+    {
+        let results = await this.db.query(
+            'SELECT * FROM `invite_public_signup` WHERE user_id = ? AND i_id = ?',
+            [user_id, i_id]
+        );
+
+        return !!results.length;
+    }
+
+    async signupPublicInv(user_id, i_id)
+    {
+        await this.db.query(
+            "INSERT INTO `invite_public_signup` SET ?",
+            {i_id: i_id, user_id: user_id, timestamp: Date.now(), approved: false}
+        )
+    }
+
     /* ----- End of functions for Invite ----- */
 
     /* -------- Map start form here -------- */
@@ -588,7 +609,7 @@ module.exports = class DB {
 
     async deletePosition(ID, User) {
         await this.db.query(
-            'DELETE FROM map WHERE ID = ? AND User = ?',
+            'DELETE FROM Map WHERE ID = ? AND User = ?',
             [ID, User]
         );
     }
@@ -609,7 +630,7 @@ module.exports = class DB {
 
     async getphotoByphotoid(photoid) {
         let result = await this.db.query(
-            'SELECT * FROM photo WHERE photoid = ?',
+            'SELECT * FROM Photo WHERE photoid = ?',
             photoid,
         )
         return result;
@@ -617,7 +638,7 @@ module.exports = class DB {
 
     async deletephotoByphotoid(photoid) {
         await this.db.query(
-            'DELETE FROM `photo` WHERE `photoid` = ?',
+            'DELETE FROM `Photo` WHERE `photoid` = ?',
             photoid
         )
     }
@@ -633,7 +654,7 @@ module.exports = class DB {
 
     async getPhotoInfo(ID, User) {
         let Photo = await this.db.query(
-            'SELECT * FROM `photo` WHERE `ID` = ? AND `User` = ?',
+            'SELECT * FROM `Photo` WHERE `ID` = ? AND `User` = ?',
             [ID, User]
         );
         return Photo;
@@ -641,7 +662,7 @@ module.exports = class DB {
 
     async addPhoto(ID, User, PhotoID) {
         await this.db.query(
-            'INSERT INTO `photo` SET ?',
+            'INSERT INTO `Photo` SET ?',
             { ID, User, PhotoID }
         );
     }
