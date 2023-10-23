@@ -13,6 +13,19 @@ const AddInviteSchema = z.object({
     }),
 });
 
+const EditInviteSchema = z.object({
+    body: z.object({
+        Name: z.string(),
+        Place: z.number(),
+        sp_type: z.number(),
+        DateTime: z.number(),
+        Other: z.string()
+    }),
+    params: z.object({
+        i_id: z.coerce.number()
+    })
+});
+
 const getInviteByIdSchema = z.object({
     params: z.object({
         i_id: z.coerce.number()
@@ -90,7 +103,7 @@ router.get('/invitation/InviteType', validate(GetInvitesSchema), wrap(async(req,
     }
 }));
 
-router.put('/invitation/EditInvite', auth.checkUserSession, validate(AddInviteSchema),wrap(async(req, res) => {
+router.put('/invitation/EditInvite/:i_id', auth.checkUserSession, validate(EditInviteSchema),wrap(async(req, res) => {
     
     /**
       * @type {DB}
@@ -103,7 +116,7 @@ router.put('/invitation/EditInvite', auth.checkUserSession, validate(AddInviteSc
     const sp_type = req.body.sp_type;
     const DateTime = req.body.DateTime;
     const Other = req.body.Other;
-    const i_id = req.query.i_id;
+    const i_id = req.params.i_id;
     
     let contents = await db.getInviteById(i_id);
 
