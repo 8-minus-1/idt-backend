@@ -6,7 +6,7 @@ const { validate, wrap } = require('../utils');
 const DB = require('../db');
 const auth = require('./auth');
 const app = express();
-
+const request = require('request');
 const addPosition = z.object({
     body: z.object({
         Name: z.string().max(30),
@@ -64,6 +64,7 @@ const getRankInfo = z.object({
 
 const router = express.Router();
 
+
 router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(async (req, res) => {
     /**
      * @type {DB}
@@ -85,29 +86,39 @@ router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(a
     //let info = await db.getPositionById(ID);
     let len = info.length;
     var Renew;
-
-    if (!len) {
-        await db.addMap(Name, City, Town, Address, OpenTime, CloseTime, Price, Parking, sp_type, Url, Phone, Renew, User);
-        res.send({
-            status: "OK",
-            Name: Name,
-            City: City,
-            Town: Town,
-            Address: Address,
-            OpenTime: OpenTime,
-            CloseTime: CloseTime,
-            Price: Price,
-            Parking: Parking,
-            sp_type: sp_type,
-            Url: Url,
-            Phone: Phone,
-            Renew: Renew,
-            User: User
-        });
-    }
-    else {
-        res.status(501).send({ error: "已存在相同地點!!" })
-    }
+    let apiKey = 'AIzaSyDXH9MDaTGeJUlZZznkjZ4_I9wb1qWoFgE';
+    let address = Name;
+    let targetUrl = 'https://maps.googleapis.com/maps/api/geocode/json?address='+encodeURI(address)+'&key='+apiKey;
+    request(targetUrl, function (err, response, body) {
+        //console.log('body:', body);
+        let geoLocation = JSON.parse(body);
+        //let mssg = `lat: ${geoLocation.results[0].geometry.location.lat} long: ${geoLocation.results[0].geometry.location.lng}`;
+        var Latitude = geoLocation.results[0].geometry.location.lat;
+        var Longitude = geoLocation.results[0].geometry.location.lng;
+        if (!len) {
+            db.addMap(Name,Latitude,Longitude, City, Town, Address, OpenTime, CloseTime, Price, Parking, sp_type, Url, Phone, Renew, User);
+            res.send({
+                status: "OK",
+                Name: Name,
+                City: City,
+                Town: Town,
+                Address: Address,
+                OpenTime: OpenTime,
+                CloseTime: CloseTime,
+                Price: Price,
+                Parking: Parking,
+                sp_type: sp_type,
+                Url: Url,
+                Phone: Phone,
+                Renew: Renew,
+                User: User
+            });
+        }
+        else {
+            res.status(501).send({ error: "已存在相同地點!!" })
+        }
+        
+    });
 }));
 
 router.get('/getInfo', validate(getPosition), wrap(async (req, res) => {
@@ -388,7 +399,7 @@ router.get('/RankByUser', auth.checkUserSession, validate(getRankInfo) ,wrap(asy
     const db = req.app.locals.db;
     const User = req.session.user.id;
     const ID = req.query.id;
-
+    
     let status = await db.getRankExistence(ID,User);
 
     if(status != -1){

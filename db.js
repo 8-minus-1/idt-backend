@@ -1,5 +1,5 @@
 const mysql = require('promise-mysql');
-
+const request = require('request');
 module.exports = class DB {
     static async create({
         host,
@@ -541,16 +541,16 @@ module.exports = class DB {
     /* ----- End of functions for Invite ----- */
 
     /* -------- Map start form here -------- */
-    async addMap(Name, City, Town, Address, OpenTime, CloseTime, Price, Parking, sp_type, Url, Phone, Renew, User) {
+    async addMap(Name,Latitude, Longitude, City, Town, Address, OpenTime, CloseTime, Price, Parking, sp_type, Url, Phone, Renew, User) {
         var date = new Date();
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, 0);
-        const day = String(date.getDate()).padStart(2, 0);
+        const year = date.now.getFullYear();
+        const month = String(date.now.getMonth() + 1).padStart(2, 0);
+        const day = String(date.now.getDate()).padStart(2, 0);
         Renew = `${year}-${month}-${day}`;
-
+        
         await this.db.query(
             'INSERT INTO Map SET ?',
-            { Name, City, Town, Address, OpenTime, CloseTime, Price, Parking, sp_type, Url, Phone, Rank:0,Renew, User},
+            { Name,Latitude, Longitude, City, Town, Address, OpenTime, CloseTime, Price, Parking, sp_type, Url, Phone, Rank:0,Renew, User},
         );
     }
 
