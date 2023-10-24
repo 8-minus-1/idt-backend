@@ -635,6 +635,23 @@ module.exports = class DB {
             'DELETE FROM rank WHERE ID = ? AND User = ?',
             [ID, User]
         );
+        let data = await this.db.query(
+            'SELECT * FROM `rank` WHERE `ID` = ?',
+            ID
+        );
+
+        let rank = 0;
+        if(data.length)
+        {
+            for (let n = 0; n < data.length; n++)
+                rank += data[n].Rank;
+            rank /= data.length;
+        }
+
+        await this.db.query(
+            'UPDATE Map SET ? WHERE ID = ?',
+            [{ Rank: rank }, ID]
+        )
     }
 
     async deleteAllRank(ID) {

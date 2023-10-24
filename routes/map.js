@@ -300,7 +300,7 @@ router.delete('/deleteRank', auth.checkUserSession, validate(getPosition), wrap(
             await db.deleteRank(ID, User);
             res.send({
                 message: "成功!!",
-                Name: Name
+                ID: ID
             });
         }
     }
