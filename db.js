@@ -522,6 +522,22 @@ module.exports = class DB {
         )
     }
 
+    async getSignupListById(i_id)
+    {
+        return await this.db.query(
+            "SELECT * FROM `invite_public_signup` WHERE i_id = ?",
+            i_id
+        )
+    }
+
+    async getInvitationByUser(user_id)
+    {
+        return await this.db.query(
+            "SELECT * FROM `invite` WHERE User_id = ?",
+            user_id
+        )
+    }
+
     /* ----- End of functions for Invite ----- */
 
     /* -------- Map start form here -------- */
