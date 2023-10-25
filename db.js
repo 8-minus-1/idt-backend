@@ -537,7 +537,7 @@ module.exports = class DB {
     async getSignupListById(i_id)
     {
         return await this.db.query(
-            "SELECT * FROM `invite_public_signup` WHERE i_id = ?",
+            "SELECT * FROM `invite_public_signup` WHERE i_id = ? AND approved != -1",
             i_id
         )
     }
