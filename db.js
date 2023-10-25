@@ -510,7 +510,19 @@ module.exports = class DB {
             [user_id, i_id]
         );
 
-        return !!results.length;
+        if(!results.length) return 0;
+        else if(results.length)
+        {
+            if(results[0].approved === 0)
+            {
+                return -1;
+            }
+            else return results[0].approved;
+        }
+
+        // Not signed up: 0
+        // signed up but not yet accepted or got rejected: -1
+        // signed up and got accepted: 1
     }
 
     async signupPublicInv(user_id, i_id) {

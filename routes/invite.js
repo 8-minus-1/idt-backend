@@ -241,8 +241,8 @@ router.get('/signup/status/:i_id', auth.checkUserSession, validate(signupInvitat
     else
     {
         // true or false
-        let tof = await db.alreadySignedUp(User_id, i_id);
-        res.send({status: tof});
+        let status = await db.alreadySignedUp(User_id, i_id);
+        res.send({status: status});
     }
 }))
 
