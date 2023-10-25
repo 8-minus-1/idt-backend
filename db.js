@@ -512,14 +512,25 @@ module.exports = class DB {
             [user_id, i_id]
         );
 
-        return !!results.length;
+        if(!results.length) return 0;
+        else if(results.length)
+        {
+            if(results[0].approved === 0)
+            {
+                return -1;
+            }
+            else return results[0].approved;
+        }
+
+        // Not signed up: 0
+        // signed up but not yet accepted or got rejected: -1
+        // signed up and got accepted: 1
     }
 
-    async signupPublicInv(user_id, i_id)
-    {
+    async signupPublicInv(user_id, i_id) {
         await this.db.query(
             "INSERT INTO `invite_public_signup` SET ?",
-            {i_id: i_id, user_id: user_id, timestamp: Date.now(), approved: false}
+            { i_id: i_id, user_id: user_id, timestamp: Date.now(), approved: false }
         )
     }
 
@@ -537,6 +548,12 @@ module.exports = class DB {
             "SELECT * FROM `invite` WHERE User_id = ?",
             user_id
         )
+        for(let n = 0; n < Inv.length; ++n)
+        {
+            let signupList = await this.getSignupListById(Inv[n].i_id);
+            Inv[n].signupCount = signupList.length;
+        }
+        return Inv;
     }
 
     async getSignupById(s_id)
@@ -551,6 +568,14 @@ module.exports = class DB {
     {
         await this.db.query(
             'UPDATE `invite_public_signup` SET approved = 1 WHERE s_id = ?',
+            s_id
+        )
+    }
+
+    async disappoveSignup(s_id)
+    {
+        await this.db.query(
+            'UPDATE `invite_public_signup` SET approved = -1 WHERE s_id = ?',
             s_id
         )
     }
@@ -612,10 +637,9 @@ module.exports = class DB {
             ID
         );
         let rank = 0;
-        if(data.length)
-        {
+        if (data.length) {
             for (let n = 0; n < data.length; n++)
-            rank += data[n].Rank;
+                rank += data[n].Rank;
             rank /= data.length;
         }
 
@@ -625,7 +649,7 @@ module.exports = class DB {
         )
     }
 
-    async changePositionRank(ID, Rank,Comment, User ) {
+    async changePositionRank(ID, Rank, Comment, User) {
         await this.db.query(
             'UPDATE rank SET Rank= ?, Comment = ? WHERE ID = ? AND User = ?',
             [Rank, Comment, ID, User]
@@ -673,8 +697,7 @@ module.exports = class DB {
         );
 
         let rank = 0;
-        if(data.length)
-        {
+        if (data.length) {
             for (let n = 0; n < data.length; n++)
                 rank += data[n].Rank;
             rank /= data.length;
@@ -771,9 +794,9 @@ module.exports = class DB {
         return results
     }
 
-    async getAllPosition(){
+    async getAllPosition() {
         let result = await this.db.query(
-            'SELECT * FROM MapView'
+            'SELECT * FROM Map WHERE 1'
         )
         return result;
     }
