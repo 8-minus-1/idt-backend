@@ -90,33 +90,35 @@ router.post('/addPosition', auth.checkUserSession, validate(addPosition), wrap(a
     let address = Name;
     let targetUrl = 'https://maps.googleapis.com/maps/api/geocode/json?address='+encodeURI(address)+'&key='+apiKey;
     request(targetUrl, function (err, response, body) {
-        //console.log('body:', body);
-        let geoLocation = JSON.parse(body);
-        //let mssg = `lat: ${geoLocation.results[0].geometry.location.lat} long: ${geoLocation.results[0].geometry.location.lng}`;
-        var Latitude = geoLocation.results[0].geometry.location.lat;
-        var Longitude = geoLocation.results[0].geometry.location.lng;
-        if (!len) {
-            db.addMap(Name,Latitude,Longitude, City, Town, Address, OpenTime, CloseTime, Price, Parking, sp_type, Url, Phone, Renew, User);
-            res.send({
-                status: "OK",
-                Name: Name,
-                City: City,
-                Town: Town,
-                Address: Address,
-                OpenTime: OpenTime,
-                CloseTime: CloseTime,
-                Price: Price,
-                Parking: Parking,
-                sp_type: sp_type,
-                Url: Url,
-                Phone: Phone,
-                Renew: Renew,
-                User: User
-            });
-        }
-        else {
-            res.status(501).send({ error: "已存在相同地點!!" })
-        }
+            console.log(err);
+            let geoLocation = JSON.parse(body);
+            //let mssg = `lat: ${geoLocation.results[0].geometry.location.lat} long: ${geoLocation.results[0].geometry.location.lng}`;
+            var Latitude = geoLocation.results[0].geometry.location.lat;
+            var Longitude = geoLocation.results[0].geometry.location.lng;
+            
+            if (!len) {
+                db.addMap(Name,Latitude,Longitude, City, Town, Address, OpenTime, CloseTime, Price, Parking, sp_type, Url, Phone, Renew, User);
+                res.send({
+                    status: "OK",
+                    Name: Name,
+                    City: City,
+                    Town: Town,
+                    Address: Address,
+                    OpenTime: OpenTime,
+                    CloseTime: CloseTime,
+                    Price: Price,
+                    Parking: Parking,
+                    sp_type: sp_type,
+                    Url: Url,
+                    Phone: Phone,
+                    Renew: Renew,
+                    User: User
+                });
+            }
+            else {
+                res.status(501).send({ error: "已存在相同地點!!" })
+            }
+        
         
     });
 }));
