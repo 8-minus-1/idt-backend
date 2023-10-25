@@ -538,6 +538,22 @@ module.exports = class DB {
         )
     }
 
+    async getSignupById(s_id)
+    {
+        return await this.db.query(
+            'SELECT * FROM `invite_public_signup` WHERE s_id = ?',
+            s_id
+        )
+    }
+
+    async appoveSignup(s_id)
+    {
+        await this.db.query(
+            'UPDATE `invite_public_signup` SET approved = 1 WHERE s_id = ?',
+            s_id
+        )
+    }
+
     /* ----- End of functions for Invite ----- */
 
     /* -------- Map start form here -------- */

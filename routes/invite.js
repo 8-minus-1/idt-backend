@@ -45,6 +45,12 @@ const signupInvitationSchema = z.object({
     })
 })
 
+const approveSignupSchema = z.object({
+    params: z.object({
+        s_id: z.coerce.number(), // the signup id
+    })
+})
+
 const router = express.Router();
 
 router.post('/invitation', auth.checkUserSession, validate(AddInviteSchema), wrap(async(req, res) => {
@@ -275,5 +281,33 @@ router.get('/my', auth.checkUserSession, wrap( async(req, res) =>{
     res.send(results);
 
 } ))
+
+router.post('/approve/:s_id', auth.checkUserSession, validate(approveSignupSchema), wrap( async (req, res) => {
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const user_id = req.session.user.id;
+    const s_id = req.params.s_id;
+
+    let signup = await db.getSignupById(s_id);
+    if(!signup.length)
+    {
+        res.status(404).send({error: "找不到此報名紀錄"})
+    }
+    else
+    {
+        let invitation = await db.getInviteById(signup[0].i_id);
+        if( invitation[0].User_id !== user_id )
+        {
+            res.status(403).send({error: "您並非此公開邀請之發起者，故無法同意報名"});
+        }
+        else
+        {
+            await db.appoveSignup(s_id);
+            res.send({status: "success"});
+        }
+    }
+}))
 
 module.exports = router;
