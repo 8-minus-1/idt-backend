@@ -530,7 +530,7 @@ module.exports = class DB {
     async signupPublicInv(user_id, i_id) {
         await this.db.query(
             "INSERT INTO `invite_public_signup` SET ?",
-            { i_id: i_id, user_id: user_id, timestamp: Date.now(), approved: false }
+            { i_id: i_id, user_id: user_id, timestamp: Date.now(), approved: 0 }
         )
     }
 
@@ -796,7 +796,7 @@ module.exports = class DB {
 
     async getAllPosition() {
         let result = await this.db.query(
-            'SELECT * FROM Map WHERE 1'
+            'SELECT * FROM MapView'
         )
         return result;
     }
