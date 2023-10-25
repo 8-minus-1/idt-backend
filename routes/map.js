@@ -178,8 +178,9 @@ router.put('/editRank', auth.checkUserSession, validate(addPositionRank), wrap(a
      */
     const db = req.app.locals.db;
     const User = req.session.user.id;
-    const ID = req.query.ID;
-    const Rank = req.query.Rank;    
+    const ID = req.body.ID;
+    const Rank = req.body.Rank;
+    const Comment = req.body.Comment;
 
     let info = await db.getPositionById(ID);
     let len = info.length;
@@ -190,10 +191,11 @@ router.put('/editRank', auth.checkUserSession, validate(addPositionRank), wrap(a
             res.status(403).send({error:"無此評分資訊"});
         }
         else {
-            await db.changePositionRank(ID, Rank, User);
+            await db.changePositionRank(ID, Rank, Comment, User);
             res.send({
                 ID: ID,
                 Rank: Rank,
+                Comment: Comment,
                 User: User
             });    
         }
