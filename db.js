@@ -573,7 +573,7 @@ module.exports = class DB {
 
     async getPositionById(id) {
         let result = await this.db.query(
-            'SELECT * FROM Map WHERE ID = ?',
+            'SELECT * FROM MapView WHERE ID = ?',
             id,
         )
         return result;
@@ -581,7 +581,7 @@ module.exports = class DB {
 
     async getIdByName(Name) {
         let result = await this.db.query(
-            'SELECT * FROM Map WHERE Name = ?',
+            'SELECT * FROM MapView WHERE Name = ?',
             Name,
         )
         return result[0].ID;
@@ -773,7 +773,7 @@ module.exports = class DB {
 
     async getAllPosition(){
         let result = await this.db.query(
-            'SELECT * FROM Map WHERE 1'
+            'SELECT * FROM MapView'
         )
         return result;
     }
