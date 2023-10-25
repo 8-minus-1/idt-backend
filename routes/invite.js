@@ -310,4 +310,29 @@ router.post('/approve/:s_id', auth.checkUserSession, validate(approveSignupSchem
     }
 }))
 
+router.post('/disapprove/:s_id', auth.checkUserSession, validate(approveSignupSchema), wrap( async (req, res) => {
+    const db = req.app.locals.db;
+    const user_id = req.session.user.id;
+    const s_id = req.params.s_id;
+
+    let signup = await db.getSignupById(s_id);
+    if(!signup.length)
+    {
+        res.status(404).send({error: "找不到此報名紀錄"})
+    }
+    else
+    {
+        let invitation = await db.getInviteById(signup[0].i_id);
+        if( invitation[0].User_id !== user_id )
+        {
+            res.status(403).send({error: "您並非此公開邀請之發起者，故無法刪除報名"});
+        }
+        else
+        {
+            await db.disappoveSignup(s_id);
+            res.send({status: "success"});
+        }
+    }
+}))
+
 module.exports = router;
