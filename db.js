@@ -544,7 +544,7 @@ module.exports = class DB {
 
     async getInvitationByUser(user_id)
     {
-        return await this.db.query(
+        let Inv = await this.db.query(
             "SELECT * FROM `invite` WHERE User_id = ?",
             user_id
         )
