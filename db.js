@@ -900,4 +900,86 @@ module.exports = class DB {
         return 0;
     }
     /* ------ End of functions for Rules ------ */
+
+    /* ------ <聊天> ----- */
+
+    /**
+     * @typedef Chat
+     * @type {object}
+     * @property {number} id
+     * @property {string} name
+     * @property {string} last_message_created_at
+     * @property {string} last_message_sender_name
+     * @property {number} last_message_type
+     * @property {string} last_message_content 
+     */
+
+    /**
+     * 取得使用者所有可存取的邀請，及邀請中最後一則訊息的相關資訊。
+     * @param {number} userId
+     * @returns {Promise<Chat[]>}
+     */
+    async getChats(userId) {
+        return await this.db.query(
+            `
+            SELECT
+                invite.i_id AS id,
+                invite.Name AS name,
+                last_message.created_at AS last_message_created_at,
+                last_message_sender.nickname AS last_message_sender_name,
+                last_message.type AS last_message_type,
+                last_message.content AS last_message_content
+            FROM invite
+            LEFT JOIN
+                (
+                    SELECT m1.invite_id, m1.created_at, m1.from_user_id, m1.type, m1.content
+                    FROM invite_messages m1
+                    LEFT JOIN invite_messages m2 ON (m1.invite_id = m2.invite_id AND m1.created_at < m2.created_at)
+                    WHERE m2.invite_id IS NULL
+                    GROUP BY m1.invite_id
+                ) last_message ON last_message.invite_id = invite.i_id
+            LEFT JOIN
+                (
+                    SELECT user_id, nickname
+                    FROM user_details
+                ) last_message_sender ON last_message_sender.user_id = last_message.from_user_id
+            WHERE invite.User_id = ?
+            OR (
+                invite.i_id in (
+                    SELECT i_id
+                    FROM invite_public_signup
+                    WHERE user_id = ? AND approved = 1
+                )
+            )
+            ORDER BY last_message_created_at DESC, id DESC
+            `,
+            [userId, userId],
+        );
+    }
+
+    /**
+     * 取得使用者所有可存取的邀請 ID。
+     * @param {number} userId 
+     * @returns {Promise<number[]>}
+     */
+    async getChatIds(userId) {
+        let results = await this.db.query(
+            `
+            SELECT i_id AS id
+            FROM invite
+            WHERE invite.User_id = ?
+            OR (
+                invite.i_id in (
+                    SELECT i_id
+                    FROM invite_public_signup
+                    WHERE user_id = ? AND approved = 1
+                )
+            )
+            `,
+            [userId, userId],
+        );
+        return results.map(res => res.id);
+    }
+
+    /* ------ </聊天> ----- */
 }

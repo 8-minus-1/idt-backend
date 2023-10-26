@@ -130,6 +130,7 @@ async function main() {
     app.use('/api/invite', require('./routes/invite.js'));
     app.use('/api/map', require('./routes/map.js'));
     app.use('/api/rules' ,require('./routes/rules'));
+    app.use('/api/chats', require('./routes/chats'));
 
     app.use((err, req, res, next) => {
         req.error = err;
