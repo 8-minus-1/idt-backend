@@ -788,7 +788,7 @@ module.exports = class DB {
         keywords = keywords.replace(' ', '%')
         console.log(keywords);
         let results = await this.db.query(
-            "SELECT ?? FROM `Map` where Name LIKE ?",
+            "SELECT ?? FROM `MapView` where Name LIKE ?",
             [columns, keywords]
         );
         return results
