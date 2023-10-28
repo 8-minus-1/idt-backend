@@ -96,6 +96,8 @@ router.get('/invitation/InviteType', validate(GetInvitesSchema), wrap(async(req,
       */
     const db = req.app.locals.db;
     const sp_type = req.query.sp_type;
+    let NowDateTime = new Date(Date.now()).getTime().toString();
+
     //let results = await db.getSportById(sp_type);
     let sport = (sp_type)? await db.getSportById(sp_type) : [];
 
@@ -105,7 +107,7 @@ router.get('/invitation/InviteType', validate(GetInvitesSchema), wrap(async(req,
     }
     else
     {
-        let results = await db.getInviteType(sp_type);
+        let results = await db.getInviteType(sp_type, NowDateTime);
         res.send(results);
     }
 }));

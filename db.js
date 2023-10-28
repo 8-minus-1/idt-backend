@@ -467,11 +467,17 @@ module.exports = class DB {
 
         return results;
     }
-    async getInviteType(sp_type) {
+    async getInviteType(sp_type, NowDateTime) {
         let results = [];
+        await this.db.query(
+            'UPDATE `invite` SET expired = 1 WHERE DateTime < ?',
+            NowDateTime
+        );
+
         if (sp_type === 0) {
             results = await this.db.query(
-                'SELECT * FROM invite ORDER by DateTime',
+                'SELECT * FROM invite WHERE expired != ? ORDER by DateTime',
+                1
             );
         }
         else {
