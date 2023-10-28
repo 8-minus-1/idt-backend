@@ -160,7 +160,7 @@ module.exports = class DB {
      */
     async getUser(id) {
         let results = await this.db.query(
-            'SELECT id, email, phone FROM users WHERE id = ?',
+            'SELECT id, email, phone, profile_completed FROM users WHERE id = ?',
             id,
         );
         if (!results.length) return null;
@@ -169,7 +169,7 @@ module.exports = class DB {
 
     async getUserByEmail(email) {
         let results = await this.db.query(
-            'SELECT id, email, phone, password FROM users WHERE email = ?',
+            'SELECT id, email, phone, password, profile_completed FROM users WHERE email = ?',
             email,
         );
         if (!results.length) return null;
@@ -273,6 +273,79 @@ module.exports = class DB {
             'UPDATE users SET ? WHERE id = ?',
             [{ phone }, userId],
         );
+    }
+
+    async setUserProfile(user_id, data)
+    {
+        // save to user_details
+        await this.db.query(
+            'INSERT INTO user_details SET ?',
+            {user_id: user_id, name: data.name, nickname: data.nickname,
+            gender: data.gender, birthday: data.birthday, height: data.height,
+            weight: data.weight, weekly_avg_hours: data.avgHours}
+        )
+
+        // update phone
+        await this.setUserPhone(user_id, data.phone);
+
+        // save to user_interests
+        for(let n = 0; n < data.interests.length; ++n)
+        {
+            await this.db.query(
+                'INSERT INTO user_interests SET ?',
+                {user_id, sp_type: data.interests[n], level: data.level[n]}
+            )
+        }
+
+        // save mainArea
+        let mainCity = (await this.getDistrictInfo(data.mainArea)).city_id;
+        await this.db.query(
+            'INSERT INTO user_living_cities SET ?',
+            {user_id: user_id, city_id: mainCity, district_id: data.mainArea}
+        )
+
+        // save secondaryArea
+        if(data.secondaryArea)
+        {
+            let secondaryCity = (await this.getDistrictInfo(data.secondaryArea)).city_id;
+            await this.db.query(
+                'INSERT INTO user_living_cities SET ?',
+                {user_id: user_id, city_id: secondaryCity, district_id: data.secondaryArea}
+            )
+        }
+
+        // save time habit
+        for(let n = 0; n < data.regularTime.length; ++n)
+        {
+            await this.db.query(
+                'INSERT INTO user_time_habit SET ?',
+                {user_id: user_id, time_slot_id: data.regularTime[n]}
+            )
+        }
+
+        // save difficulties
+        for(let n = 0; n < data.difficulties.length; ++n)
+        {
+            await this.db.query(
+                'INSERT INTO user_obstacles SET ?',
+                {user_id: user_id, obstacle_id: data.difficulties[n]}
+            )
+        }
+
+        // save other difficulties
+        if(data.other !== '')
+        {
+            await this.db.query(
+                'INSERT INTO user_obstacles_other SET ?',
+                {user_id: user_id, comment: data.other}
+            )
+        }
+
+        // set user as profileCompleted
+        await this.db.query(
+            'UPDATE users SET profile_completed = ? WHERE id = ?',
+            [true, user_id]
+        )
     }
 
     /* ----- Start of functions for QA ----- */
@@ -835,6 +908,16 @@ module.exports = class DB {
             'SELECT * FROM districts'
         )
         return results;
+    }
+
+    async getDistrictInfo(d_id)
+    {
+        let results = await this.db.query(
+            'SELECT * FROM districts WHERE d_id = ?',
+            d_id
+        )
+
+        return results[0];
     }
 
     /* -------- Map end here -------- */

@@ -135,7 +135,7 @@ async function sendVerificationEmail(isDev, config, toAddress, token, isResetPas
 To: ${toAddress}
 Subject: ${subject}
 
-${content.replaceAll('http', 'hxxp')}`;
+${content.replaceAll('http', 'http')}`;
         let { telegramBotToken, telegramChatId } = config.verificationTestingReceiverCredentials;
 
         await got.post('https://api.telegram.org/bot' + telegramBotToken + '/sendMessage', {
@@ -266,12 +266,12 @@ router.get('/status', checkUserSession, wrap(async (req, res) => {
      * @type {DB}
      */
     const db = req.app.locals.db;
-    let { email, phone } = await db.getUser(id);
+    let { email, phone, profile_completed } = await db.getUser(id);
     res.send({
         id,
         email,
         phone,
-        profileCompleted: false,
+        profileCompleted: profile_completed,
     });
 }));
 
@@ -295,13 +295,13 @@ router.post('/signin', validate(SignInRequest), wrap(async (req, res) => {
 
     req.session.user = {
         id: user.id,
-        profileCompleted: false,
+        profileCompleted: user.profile_completed,
     };
     res.send({
         id: user.id,
         email: user.email,
         phone: user.phone,
-        profileCompleted: false,
+        profileCompleted: user.profile_completed,
     });
 }));
 
@@ -537,6 +537,55 @@ router.post('/fakeSignin', validate(fakeSigninSchema), wrap(async (req, res) => 
         message: "Fake signed in as user "+user_id+"!"
     });
 }));
+
+const surveySchema = z.object({
+   body: z.object({
+       name: z.string().min(1).max(32),
+       phone: z.string().length(10),
+       nickname: z.string().max(32).min(1),
+       gender: z.coerce.number(),
+       birthday: z.number(), //bigint
+       height: z.coerce.number(),
+       weight: z.coerce.number(),
+       interests: z.array( z.coerce.number() ),
+       avgHours: z.number().max(168),
+       regularTime: z.array( z.coerce.number() ),
+       level: z.array( z.coerce.number() ),
+       mainArea: z.coerce.number().max(370),
+       secondaryArea: z.coerce.number().max(370),
+       difficulties: z.array( z.coerce.number().max(5) ),
+       other: z.string().trim().max(64)
+   })
+});
+
+router.post('/userSurvey', checkUserSession, validate(surveySchema), wrap( async (req, res)=>{
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const user_id = req.session.user.id;
+    const profileCompleted = req.session.user.profileCompleted;
+    let data = req.body;
+    console.log(data);
+
+    if(data.interests.length !== data.level.length)
+    {
+        res.status(400).send({error: "興趣與等級長度不符"})
+    }
+    if(profileCompleted)
+    {
+        res.status(409).send({error: "已有資料"})
+    }
+    else
+    {
+        await db.setUserProfile(user_id, data);
+        req.session.user = {
+            id: user_id,
+            profileCompleted: true,
+        };
+        res.send({status: "OK"});
+    }
+}))
 
 // exports the router and the checkUserSession function
 // 在其他檔案也可以直接引入，以確定登入狀態
