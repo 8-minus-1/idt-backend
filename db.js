@@ -15,7 +15,7 @@ module.exports = class DB {
             password,
             database: dbname,
             charset: 'utf8mb4',
-            debug :true
+            //debug :true
         });
         return new DB({ pool });
     }
@@ -799,6 +799,31 @@ module.exports = class DB {
             'SELECT * FROM MapView'
         )
         return result;
+    }
+
+    async getDistrictsByCity(city_id)
+    {
+        let results = await this.db.query(
+            'SELECT * FROM districts WHERE city_id = ?',
+            city_id
+        )
+        return results;
+    }
+
+    async getCities()
+    {
+        let results = await this.db.query(
+            'SELECT * FROM cities'
+        )
+        return results;
+    }
+
+    async getDistricts()
+    {
+        let results = await this.db.query(
+            'SELECT * FROM districts'
+        )
+        return results;
     }
 
     /* -------- Map end here -------- */

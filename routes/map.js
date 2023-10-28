@@ -7,6 +7,7 @@ const DB = require('../db');
 const auth = require('./auth');
 const app = express();
 const request = require('request');
+const {object} = require("zod");
 const addPosition = z.object({
     body: z.object({
         Name: z.string().max(30),
@@ -61,6 +62,12 @@ const getRankInfo = z.object({
         id: z.coerce.number()
     })
 });
+
+const getDistrictsSchema = z.object({
+    params: z.object({
+        city_id: z.coerce.number().min(1).max(23)
+    })
+})
 
 const router = express.Router();
 
@@ -433,6 +440,40 @@ router.get('/RankByPlace', auth.checkUserSession, validate(getRankInfo) ,wrap(as
         // res.send(0);
        res.status(404).send("目前資料庫沒有資料");
     }
+}))
+
+router.get('/cities', wrap( async(req, res) => {
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+
+    let cities = await db.getCities();
+
+    res.send(cities);
+}));
+
+router.get('/city/:city_id/districts/', validate(getDistrictsSchema), wrap( async(req, res) => {
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const city_id = req.params.city_id;
+
+    let districts = await db.getDistrictsByCity(city_id);
+
+    res.send(districts);
+}))
+
+router.get('/districts/', wrap( async(req, res) => {
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+
+    let districts = await db.getDistricts();
+
+    res.send(districts);
 }))
 
 module.exports = router;
