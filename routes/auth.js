@@ -548,7 +548,7 @@ const surveySchema = z.object({
        height: z.coerce.number(),
        weight: z.coerce.number(),
        interests: z.array( z.coerce.number() ),
-       avgHours: z.number().max(168),
+       avgHours: z.coerce.number().max(168),
        regularTime: z.array( z.coerce.number() ),
        level: z.array( z.coerce.number() ),
        mainArea: z.coerce.number().max(370),
