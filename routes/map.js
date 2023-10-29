@@ -147,6 +147,20 @@ router.get('/getInfo', validate(getPosition), wrap(async (req, res) => {
     }
 }));
 
+router.get('/getInfo/OpenTime', validate(getPosition), wrap(async (req, res) => {
+    const db = req.app.locals.db;
+    const id = req.query.id;
+
+    let info = await  db.getOpenTime(id);
+    let len = info.length;
+    if (len) {
+        res.send(info[0]);
+    }
+    else {
+        res.status(404).send({ error: "查無此地點!!" });
+    }
+}));
+
 router.post('/addRank', auth.checkUserSession, validate(addPositionRank), wrap(async (req, res) => {
     /**
      * @type{DB}

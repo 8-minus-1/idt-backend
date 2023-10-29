@@ -730,6 +730,14 @@ module.exports = class DB {
         return result;
     }
 
+    async getOpenTime(id){
+        let result = await this.db.query(
+            'SELECT * FROM map_opentime WHERE ID = ?',
+            id,
+        )
+        return result;
+    }
+
     async getIdByName(Name) {
         let result = await this.db.query(
             'SELECT * FROM MapView WHERE Name = ?',
