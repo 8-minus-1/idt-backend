@@ -114,7 +114,6 @@ router.get('/contests/SelectType', validate(getEventsByTypeSchema),  wrap(async(
       */
     const db = req.app.locals.db;
     const sp_type = req.query.sp_type;
-    let NowDateTime = new Date(Date.now()).toLocaleDateString();
     let sport = await db.getSportById(sp_type);
 
     if(sp_type && !sport.length)
@@ -123,7 +122,7 @@ router.get('/contests/SelectType', validate(getEventsByTypeSchema),  wrap(async(
     }
     else
     {
-         let results = await db.getSelectType(sp_type, NowDateTime);
+         let results = await db.getSelectType(sp_type);
          res.send(results);
     }
 }));

@@ -496,11 +496,10 @@ module.exports = class DB {
         return results;
     }
 
-    async getSelectType(sp_type, NowDateTime) {
+    async getSelectType(sp_type) {
         let results = {};
         await this.db.query(
-            'UPDATE `Contest` SET expired = 1 WHERE Deadline < ?',
-            NowDateTime
+            'UPDATE `Contest` SET expired = 1 WHERE Deadline < CURDATE()',
         );
         if (sp_type === 0) {
             results = await this.db.query(
