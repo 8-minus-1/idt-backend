@@ -348,6 +348,15 @@ module.exports = class DB {
         )
     }
 
+    async getUserNickname(user_id)
+    {
+        let nickname = await this.db.query(
+            'SELECT nickname FROM user_details WHERE user_id = ?',
+            user_id,
+         );
+         return (nickname.length)? nickname[0].nickname : null;
+    }
+
     /* ----- Start of functions for QA ----- */
     /**
      *
@@ -369,7 +378,8 @@ module.exports = class DB {
             'SELECT * FROM QA_question WHERE q_id = ?',
             q_id,
         )
-
+        let nickname = await this.getUserNickname(result[0].user_id);
+        result[0].nickname = (nickname)? nickname: "User"+result[0].nickname;
         return result;
     }
 
@@ -378,7 +388,6 @@ module.exports = class DB {
             'SELECT * FROM QA_answer WHERE a_id = ?',
             a_id,
         )
-
         return result;
     }
 
@@ -407,6 +416,11 @@ module.exports = class DB {
                 'SELECT * FROM QA_question WHERE sp_type = ? ORDER BY `QA_question`.`timestamp` DESC',
                 sp_type
             );
+        for(let n = 0; n < results.length; ++n)
+        {
+            let nickname = await this.getUserNickname(results[n].user_id);
+            results[n].nickname = (nickname)? nickname : "User"+results[n].user_id;
+        }
         return results;
     }
 
@@ -418,6 +432,11 @@ module.exports = class DB {
             'SELECT * FROM QA_answer WHERE q_id = ? ORDER BY `QA_answer`.`timestamp` ASC',
             q_id
         )
+        for(let n = 0; n < results.length; ++n)
+        {
+            let nickname = await this.getUserNickname(results[n].user_id);
+            results[n].nickname = (nickname)? nickname : "User"+results[n].user_id;
+        }
         return results;
     }
 
@@ -495,6 +514,11 @@ module.exports = class DB {
                 sp_type
             );
         }
+        for(let n = 0; n < results.length; ++n)
+        {
+            let nickname = await this.getUserNickname(results[n].User_id);
+            results[n].nickname = (nickname)? nickname : "User"+results[n].User_id;
+        }
         return results;
     }
 
@@ -510,7 +534,8 @@ module.exports = class DB {
             'SELECT * FROM Contest WHERE c_id = ?',
             c_id,
         )
-
+        let nickname = await this.getUserNickname(results[0].User_id);
+        results[0].nickname = (nickname)? nickname : "User"+results[0].User_id;
         return results;
     }
 
@@ -522,11 +547,16 @@ module.exports = class DB {
     }
 
     async getContestByp_id(p_id) {
-        let result = await this.db.query(
+        let results = await this.db.query(
             'SELECT * FROM `Contest` WHERE `Place` = ?',
             [p_id]
         )
-        return result;
+        for(let n = 0; n < results.length; ++n)
+        {
+            let nickname = await this.getUserNickname(results[n].User_id);
+            results[n].nickname = (nickname)? nickname : "User"+results[n].User_id;
+        }
+        return results;
     }
 
     /* ----- End of functions for Contest ----- */
@@ -564,6 +594,11 @@ module.exports = class DB {
                 sp_type
             );
         }
+        for(let n = 0; n < results.length; ++n)
+        {
+            let nickname = await this.getUserNickname(results[n].User_id);
+            results[n].nickname = (nickname)? nickname : "User"+results[n].User_id;
+        }
         return results;
     }
 
@@ -572,6 +607,8 @@ module.exports = class DB {
             'SELECT * FROM invite WHERE i_id = ?',
             i_id,
         )
+        let nickname = await this.getUserNickname(results[0].User_id);
+        results[0].nickname = (nickname)? nickname : "User"+results[0].User_id;
         return results;
     }
 
@@ -620,10 +657,16 @@ module.exports = class DB {
 
     async getSignupListById(i_id)
     {
-        return await this.db.query(
+        let results =  await this.db.query(
             "SELECT * FROM `invite_public_signup` WHERE i_id = ? AND approved != -1",
             i_id
         )
+        for(let n = 0; n < results.length; ++n)
+        {
+            let nickname = await this.getUserNickname(results[n].user_id);
+            results[n].nickname = (nickname)? nickname : "User"+results[n].user_id;
+        }
+        return results;
     }
 
     async getInvitationByUser(user_id)
