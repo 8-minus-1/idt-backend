@@ -566,7 +566,7 @@ router.post('/userSurvey', checkUserSession, validate(surveySchema), wrap( async
     const user_id = req.session.user.id;
     const profileCompleted = req.session.user.profileCompleted;
     let data = req.body;
-    console.log(data);
+    //console.log(data);
 
     if(data.interests.length !== data.level.length)
     {
