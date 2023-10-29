@@ -579,10 +579,6 @@ router.post('/userSurvey', checkUserSession, validate(surveySchema), wrap( async
     else
     {
         await db.setUserProfile(user_id, data);
-        req.session.user = {
-            id: user_id,
-            profileCompleted: true,
-        };
         res.send({status: "OK"});
     }
 }))
