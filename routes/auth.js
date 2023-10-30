@@ -266,12 +266,13 @@ router.get('/status', checkUserSession, wrap(async (req, res) => {
      * @type {DB}
      */
     const db = req.app.locals.db;
-    let { email, phone, profile_completed } = await db.getUser(id);
+    let { email, phone, profile_completed, nickname } = await db.getUser(id);
     res.send({
         id,
         email,
         phone,
-        profileCompleted: profile_completed,
+        profileCompleted: !!profile_completed,
+        nickname,
     });
 }));
 

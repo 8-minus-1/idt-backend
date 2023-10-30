@@ -160,7 +160,12 @@ module.exports = class DB {
      */
     async getUser(id) {
         let results = await this.db.query(
-            'SELECT id, email, phone, profile_completed FROM users WHERE id = ?',
+            `
+            SELECT u.id, u.email, u.phone, u.profile_completed, ud.nickname
+            FROM users u
+            LEFT JOIN user_details ud ON ud.user_id = u.id
+            WHERE u.id = ?
+            `,
             id,
         );
         if (!results.length) return null;
