@@ -1164,5 +1164,48 @@ module.exports = class DB {
         return results.map(res => res.id);
     }
 
+    async getMessages(inviteId, sinceMessageId) {
+        let results = await this.db.query(
+            `
+            SELECT m.id, m.from_user_id, m.created_at, m.type, m.content, ud.nickname
+            FROM invite_messages m
+            LEFT JOIN user_details ud ON ud.user_id = m.from_user_id
+            WHERE m.invite_id = ? AND m.id > ?
+            ORDER BY m.created_at, m.id
+            `,
+            [inviteId, sinceMessageId],
+        );
+        return results.map(({ id, from_user_id, created_at, type, content, nickname }) => ({
+            id,
+            from: {
+                id: from_user_id,
+                nickname,
+            },
+            createdAt: created_at,
+            type,
+            content,
+        }));
+    }
+
+    /**
+     * 
+     * @param {number} inviteId 
+     * @param {number} userId 
+     * @param {number} type 
+     * @param {string} content
+     */
+    async addMessage(inviteId, userId, type, content) {
+        await this.db.query(
+            `INSERT INTO invite_messages SET ?`,
+            {
+                invite_id: inviteId,
+                from_user_id: userId,
+                type,
+                content,
+                created_at: Date.now(),
+            },
+        );
+    }
+
     /* ------ </聊天> ----- */
 }
