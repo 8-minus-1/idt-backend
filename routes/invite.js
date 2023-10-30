@@ -4,6 +4,8 @@ const { validate, wrap } = require('../utils');
 const DB = require('../db');
 const auth = require('./auth');
 const checkUserSession = require("./auth");
+const { MessageType } = require('../constants');
+
 const AddInviteSchema = z.object({
     body: z.object({
         Name: z.string(),
@@ -71,7 +73,10 @@ router.post('/invitation', auth.checkUserSession, validate(AddInviteSchema), wra
      const sp_type = req.body.sp_type;
      const DateTime = req.body.DateTime;
      const Other = req.body.Other;
-     await db.addInvite(User_id, Name, Place, sp_type, DateTime, Other);
+     await db.withTransaction(async (db) => {
+        const inviteId = await db.addInvite(User_id, Name, Place, sp_type, DateTime, Other);
+        await db.addMessage(inviteId, User_id, MessageType.InviteCreated, null);
+     });
      res.send({
         status: "Success!",
     });
@@ -324,7 +329,11 @@ router.post('/approve/:s_id', auth.checkUserSession, validate(approveSignupSchem
         }
         else
         {
-            await db.appoveSignup(s_id);
+            let { i_id: inviteId, user_id: userId } = signup[0];
+            await db.withTransaction(async (db) => {
+                await db.appoveSignup(s_id);
+                await db.addMessage(inviteId, userId, MessageType.UserJoined, null);
+            });
             res.send({status: "success"});
         }
     }

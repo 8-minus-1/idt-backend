@@ -21,7 +21,7 @@ const SendMessageRequest = z.object({
         inviteId: z.coerce.number().positive().finite(),
     }),
     body: z.object({
-        content: z.string().trim().minLength(1),
+        content: z.string().trim().min(1),
     }),
 });
 

@@ -562,10 +562,11 @@ module.exports = class DB {
 
     /* ----- Start of functions for Invite ----- */
     async addInvite(User_id, Name, Place, sp_type, DateTime, Other) {
-        await this.db.query(
+        let results = await this.db.query(
             'INSERT INTO invite SET ?',
             { User_id: User_id, Name: Name, Place: Place, sp_type: sp_type, DateTime: DateTime, Other: Other },
         );
+        return results.insertId;
     }
     async getInvite() {
         let results = await this.db.query(
