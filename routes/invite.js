@@ -51,6 +51,12 @@ const approveSignupSchema = z.object({
     })
 })
 
+const getInviteByPlaceSchema = z.object({
+    params: z.object({
+        p_id: z.coerce.number()
+    })
+});
+
 const router = express.Router();
 
 router.post('/invitation', auth.checkUserSession, validate(AddInviteSchema), wrap(async(req, res) => {
@@ -280,6 +286,18 @@ router.get('/my', auth.checkUserSession, wrap( async(req, res) =>{
     const user_id = req.session.user.id;
 
     let results = await db.getInvitationByUser(user_id);
+    res.send(results);
+
+} ))
+
+router.get('/place/:p_id', validate(getInviteByPlaceSchema),  wrap( async(req, res) =>{
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const p_id = req.params.p_id;
+
+    let results = await db.getInvitationByPlace(p_id);
     res.send(results);
 
 } ))

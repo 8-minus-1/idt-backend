@@ -682,6 +682,20 @@ module.exports = class DB {
         return Inv;
     }
 
+    async getInvitationByPlace(p_id)
+    {
+        let results = await this.db.query(
+            "SELECT * FROM `invite` WHERE Place = ?",
+            p_id
+        )
+        for(let n = 0; n < results.length; ++n)
+        {
+            let nickname = await this.getUserNickname(results[n].User_id);
+            results[n].nickname = (nickname)? nickname : "User"+results[n].User_id;
+        }
+        return results;
+    }
+
     async getSignupById(s_id)
     {
         return await this.db.query(
