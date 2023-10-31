@@ -362,6 +362,41 @@ module.exports = class DB {
          return (nickname.length)? nickname[0].nickname : null;
     }
 
+    async getUserDetail(user_id)
+    {
+        let columns = ['nickname', 'gender', 'birthday']
+        let results = await this.db.query(
+            'SELECT ?? FROM user_details WHERE user_id = ?',
+            [columns, user_id]
+        )
+        let interests = await this.db.query(
+            'SELECT sp_type, sp_name, level FROM user_interests_VIEW WHERE user_id = ?',
+            user_id
+        )
+        let cities = await this.db.query(
+            'SELECT c_name, d_name FROM user_living_cities_VIEW WHERE user_id = ?',
+            user_id
+        )
+        let habit = await this.db.query(
+            'SELECT time FROM user_time_habit_VIEW WHERE user_id = ?',
+            user_id
+        );
+        let created_at = await this.db.query(
+            'SELECT created_at FROM users WHERE id = ?',
+            user_id
+        )
+        results[0].created_at = created_at[0].created_at;
+        results[0].interests = interests;
+        results[0].cities = cities;
+        results[0].habit = [];
+        for(let n = 0; n < habit.length; ++n)
+        {
+            results[0].habit.push(habit[n].time);
+        }
+        results[0].gender = (results[0].gender === 1)? '男性' : '女性'
+        return results[0];
+    }
+
     /* ----- Start of functions for QA ----- */
     /**
      *
@@ -383,8 +418,11 @@ module.exports = class DB {
             'SELECT * FROM QA_question WHERE q_id = ?',
             q_id,
         )
-        let nickname = await this.getUserNickname(result[0].user_id);
-        result[0].nickname = (nickname)? nickname: "User"+result[0].nickname;
+        if(result.length)
+        {
+            let nickname = await this.getUserNickname(result[0].user_id);
+            result[0].nickname = (nickname)? nickname: "User"+result[0].nickname;
+        }
         return result;
     }
 
@@ -538,8 +576,11 @@ module.exports = class DB {
             'SELECT * FROM Contest WHERE c_id = ?',
             c_id,
         )
-        let nickname = await this.getUserNickname(results[0].User_id);
-        results[0].nickname = (nickname)? nickname : "User"+results[0].User_id;
+        if(results.length)
+        {
+            let nickname = await this.getUserNickname(results[0].User_id);
+            results[0].nickname = (nickname)? nickname : "User"+results[0].User_id;
+        }
         return results;
     }
 
@@ -612,8 +653,11 @@ module.exports = class DB {
             'SELECT * FROM invite WHERE i_id = ?',
             i_id,
         )
-        let nickname = await this.getUserNickname(results[0].User_id);
-        results[0].nickname = (nickname)? nickname : "User"+results[0].User_id;
+        if(results.length)
+        {
+            let nickname = await this.getUserNickname(results[0].User_id);
+            results[0].nickname = (nickname)? nickname : "User"+results[0].User_id;
+        }
         return results;
     }
 

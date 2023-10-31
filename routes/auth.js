@@ -584,6 +584,25 @@ router.post('/userSurvey', checkUserSession, validate(surveySchema), wrap( async
     }
 }))
 
+router.get('/myInfo', checkUserSession, wrap( async (req, res) => {
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const user = req.session.user;
+
+    if(!user.profileCompleted)
+    {
+        res.status(404).send({error: "尚未填寫註冊問卷！"})
+    }
+    else
+    {
+        let user_detail = await db.getUserDetail(user.id);
+        res.send(user_detail);
+    }
+
+}))
+
 // exports the router and the checkUserSession function
 // 在其他檔案也可以直接引入，以確定登入狀態
 module.exports = {router, checkUserSession};

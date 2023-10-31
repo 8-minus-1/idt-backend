@@ -173,6 +173,10 @@ router.get('/invitation/:i_id', validate(getInviteByIdSchema), wrap(async(req, r
     {
         res.status(404).send({error: "Content Not Found!"});
     }
+    else if(contents[0].expired === 1)
+    {
+        res.status(403).send({error: "邀約已經過期"});
+    }
     else
     {
         res.send(contents);
@@ -362,6 +366,31 @@ router.post('/disapprove/:s_id', auth.checkUserSession, validate(approveSignupSc
             res.send({status: "success"});
         }
     }
+}))
+
+router.get('/:i_id/user', validate(getInviteByIdSchema), wrap( async (req, res) => {
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const i_id = req.params.i_id;
+
+    let inv = await db.getInviteById(i_id);
+
+    if(!inv.length)
+    {
+        res.status(404).send({error: "此公開邀請不存在"})
+    }
+    else if(inv[0].expired === 1)
+    {
+        res.status(403).send({error: "此邀請已經過期，沒有權限查看！"})
+    }
+    else
+    {
+        let user_detail = await db.getUserDetail(inv[0].User_id);
+        res.send(user_detail);
+    }
+
 }))
 
 module.exports = router;
