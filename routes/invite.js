@@ -59,6 +59,13 @@ const getInviteByPlaceSchema = z.object({
     })
 });
 
+const getSignupUserSchema = z.object({
+    params: z.object({
+        i_id: z.coerce.number(),
+        s_id: z.coerce.number()
+    })
+});
+
 const router = express.Router();
 
 router.post('/invitation', auth.checkUserSession, validate(AddInviteSchema), wrap(async(req, res) => {
@@ -165,7 +172,10 @@ router.get('/invitation/:i_id', validate(getInviteByIdSchema), wrap(async(req, r
       */
     const db = req.app.locals.db;
     const i_id = req.params.i_id;
+    const user = req.session.user;
+
     let contents = await db.getInviteById(i_id);
+
     if(!i_id){
         res.status(400).send({error: "未輸入i_id或格式錯誤"});
     }
@@ -173,7 +183,7 @@ router.get('/invitation/:i_id', validate(getInviteByIdSchema), wrap(async(req, r
     {
         res.status(404).send({error: "Content Not Found!"});
     }
-    else if(contents[0].expired === 1)
+    else if(contents[0].User_id !== user?.id && contents[0].expired === 1)
     {
         res.status(403).send({error: "邀約已經過期"});
     }
@@ -389,6 +399,41 @@ router.get('/:i_id/user', validate(getInviteByIdSchema), wrap( async (req, res) 
     {
         let user_detail = await db.getUserDetail(inv[0].User_id);
         res.send(user_detail);
+    }
+
+}))
+
+router.get('/:i_id/signup/:s_id/user', auth.checkUserSession, validate(getSignupUserSchema), wrap( async (req, res) => {
+    /**
+     * @type {DB}
+     */
+    const db = req.app.locals.db;
+    const i_id = req.params.i_id;
+    const s_id = req.params.s_id;
+    const user_id = req.session.user.id;
+
+    let inv = await db.getInviteById(i_id);
+
+    if(!inv.length)
+    {
+        res.status(404).send({error: "此公開邀請不存在"})
+    }
+    else if(inv[0].User_id !== user_id)
+    {
+        res.status(403).send({error: "您不是發起者，不能查看！"})
+    }
+    else
+    {
+        let signup = await db.getSignupById(s_id);
+        if( (signup.length && signup[0].i_id !== i_id) || !signup.length )
+        {
+            res.status(403).send({error: "此報名紀錄並非對應至此公開邀請，無法查看！"})
+        }
+        else
+        {
+            let user_detail = await db.getUserDetail(signup[0].user_id);
+            res.send(user_detail);
+        }
     }
 
 }))

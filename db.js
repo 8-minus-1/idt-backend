@@ -721,7 +721,7 @@ module.exports = class DB {
     async getInvitationByUser(user_id)
     {
         let Inv = await this.db.query(
-            "SELECT * FROM `invite` WHERE User_id = ?",
+            "SELECT * FROM `invite` WHERE User_id = ? order by DateTime DESC",
             user_id
         )
         for(let n = 0; n < Inv.length; ++n)
@@ -735,7 +735,7 @@ module.exports = class DB {
     async getInvitationByPlace(p_id)
     {
         let results = await this.db.query(
-            "SELECT * FROM `invite` WHERE Place = ?",
+            "SELECT * FROM `invite` WHERE Place = ? order by DateTime",
             p_id
         )
         for(let n = 0; n < results.length; ++n)
