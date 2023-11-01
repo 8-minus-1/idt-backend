@@ -287,6 +287,9 @@ router.get('/status', checkUserSession, wrap(async (req, res) => {
      */
     const db = req.app.locals.db;
     let { email, phone, profile_completed, nickname } = await db.getUser(id);
+    if (req.session.user.profileCompleted !== !!profile_completed) {
+        req.session.user.profileCompleted = !!profile_completed;
+    }
     res.send({
         id,
         email,
