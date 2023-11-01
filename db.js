@@ -791,6 +791,11 @@ module.exports = class DB {
             'SELECT * FROM MapView WHERE ID = ?',
             id,
         )
+        let sports = await this.db.query(
+            'SELECT sp_type, sp_name FROM map_sports_VIEW WHERE ID = ?',
+            id
+        )
+        result[0].sports = sports;
         return result;
     }
 
@@ -996,6 +1001,19 @@ module.exports = class DB {
         let result = await this.db.query(
             'SELECT * FROM MapView'
         )
+        for(let n = 0; n < result.length; ++n)
+        {
+            let sports = await this.db.query(
+                'SELECT sp_type, sp_name from map_sports_VIEW WHERE ID = ?',
+                result[n].ID
+            )
+            let opentime = this.db.query(
+                'SELECT * FROM map_opentime WHERE ID = ?',
+                result[n].ID
+            )
+            result[n].sports = sports;
+            result[n].opentime = opentime[0];
+        }
         return result;
     }
 
