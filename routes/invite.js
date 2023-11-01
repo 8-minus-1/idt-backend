@@ -183,13 +183,9 @@ router.get('/invitation/:i_id', validate(getInviteByIdSchema), wrap(async(req, r
     {
         res.status(404).send({error: "Content Not Found!"});
     }
-    else if(contents[0].User_id !== user?.id && contents[0].expired === 1)
-    {
-        res.status(403).send({error: "邀約已經過期"});
-    }
     else
     {
-        res.send(contents);
+        res.send(contents.map(i => ({...i, expired: i.DateTime < Date.now()})));
     }
 }));
 
@@ -238,6 +234,10 @@ router.post('/signup/:i_id', auth.checkUserSession, validate(signupInvitationSch
     else if(invitation[0].User_id === User_id)
     {
         res.status(403).send({error: "無法報名自己建立的活動！"})
+    }
+    else if (invitation[0].DateTime < Date.now())
+    {
+        res.status(403).send({error: "邀約已經過期"});
     }
     else
     {
