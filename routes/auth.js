@@ -528,16 +528,18 @@ const fakeSigninSchema = z.object({
 
 // 模擬登入行為, to test features that requires checking auth status, without creating a real account
 // this function just simply create session to store a testing user_id
-router.post('/fakeSignin', validate(fakeSigninSchema), wrap(async (req, res) => {
-    const user_id = req.body.user_id;
-    req.session.user = {
-        id: user_id,
-        profileCompleted: false,
-    };
-    res.send({
-        message: "Fake signed in as user "+user_id+"!"
-    });
-}));
+if (process.env.NODE_ENV !== 'production') {
+    router.post('/fakeSignin', validate(fakeSigninSchema), wrap(async (req, res) => {
+        const user_id = req.body.user_id;
+        req.session.user = {
+            id: user_id,
+            profileCompleted: false,
+        };
+        res.send({
+            message: "Fake signed in as user "+user_id+"!"
+        });
+    }));
+}
 
 const surveySchema = z.object({
    body: z.object({
