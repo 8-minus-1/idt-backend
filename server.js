@@ -46,6 +46,7 @@ const Config = z.object({
         telegramChatId: z.string(),
         telegramBotToken: z.string(),
     }).optional(),
+    recaptchaSecret: z.string().optional(),
 });
 const config = Config.parse(rawConfig);
 
@@ -86,6 +87,10 @@ async function main() {
     if (process.env.NODE_ENV === 'production') {
         app.set('trust proxy', 'loopback');
         app.locals.isDev = false;
+        if (!config.recaptchaSecret) {
+            console.error('請填入 reCAPTCHA secret');
+            process.exit(1);
+        }
     } else {
         app.use(morgan('common'))
         app.locals.isDev = true;

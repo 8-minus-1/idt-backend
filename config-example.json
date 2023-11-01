@@ -17,5 +17,6 @@
     "verificationTestingReceiverCredentials": {
         "telegramChatId": "",
         "telegramBotToken": ""
-    }
+    },
+    "recaptchaSecret": "123456"
 }

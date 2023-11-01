@@ -81,6 +81,20 @@ async function checkIfPasswordMatches(expectedSaltPasswordCombination, passwordT
     return expectedPasswordHash === buf.toString('base64');
 }
 
+async function isRecaptchaTokenValid(secret, token) {
+    let got = (await Got).default;
+    let res = await got.post('https://www.google.com/recaptcha/api/siteverify', {
+        form: {
+            secret,
+            response: token,
+        },
+    }).json();
+    if (res && res.success) {
+        return true;
+    }
+    return false;
+}
+
 const router = express.Router();
 
 // TODO: router.use(XSRF Header)
@@ -148,7 +162,13 @@ ${content.replaceAll('http', 'http')}`;
 }
 
 router.post('/flow/email', validate(SendVerificationEmailRequest), wrap(async (req, res) => {
-    //TODO: 檢查 recaptchaResponse
+    const { config } = req.app.locals;
+    if (config.recaptchaSecret) {
+        if (!await isRecaptchaTokenValid(config.recaptchaSecret, req.body.recaptchaResponse)) {
+            res.status(403).send({ error: 'recaptchaError' });
+            return;
+        }
+    }
 
     /**
      * @type {DB}
@@ -277,7 +297,13 @@ router.get('/status', checkUserSession, wrap(async (req, res) => {
 }));
 
 router.post('/signin', validate(SignInRequest), wrap(async (req, res) => {
-    //TODO: check recaptchaResponse
+    const { config } = req.app.locals;
+    if (config.recaptchaSecret) {
+        if (!await isRecaptchaTokenValid(config.recaptchaSecret, req.body.recaptchaResponse)) {
+            res.status(403).send({ error: 'recaptchaError' });
+            return;
+        }
+    }
 
     /**
      * @type {DB}
@@ -439,7 +465,13 @@ router.post('/flow/phone/send',
             });
         }
 
-        //TODO: verify recaptchaResponse
+        const { config } = req.app.locals;
+        if (config.recaptchaSecret) {
+            if (!await isRecaptchaTokenValid(config.recaptchaSecret, req.body.recaptchaResponse)) {
+                res.status(403).send({ error: 'recaptchaError' });
+                return;
+            }
+        }
 
         let phone = req.body.phone;
         if (await db.hasUserWithPhone(phone)) {
