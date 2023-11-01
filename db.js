@@ -1007,7 +1007,7 @@ module.exports = class DB {
                 'SELECT sp_type, sp_name from map_sports_VIEW WHERE ID = ?',
                 result[n].ID
             )
-            let opentime = this.db.query(
+            let opentime = await this.db.query(
                 'SELECT * FROM map_opentime WHERE ID = ?',
                 result[n].ID
             )
